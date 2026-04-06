@@ -1,12 +1,11 @@
-# TaxiLink - User Flows
+# Movely - User Flows
 
-**Last Updated:** 2026-03-29  
-**Phase:** 0 - Placeholders Created  
-**Note:** Detailed flows will be documented as features are implemented in Phases 1-5
+**Last Updated:** 2026-04-02  
+**Phase:** 3 - Public Directory Complete  
 
 ## Overview
 
-This document describes the complete user journeys through the TaxiLink platform for each user type.
+This document describes the complete user journeys through the Movely platform for each user type.
 
 ---
 
@@ -14,24 +13,84 @@ This document describes the complete user journeys through the TaxiLink platform
 
 ### Flow 1: Driver Registration
 
-**Status:** To be implemented in Phase 1
+**Status:** ✅ Implemented in Phase 1
 
 ```
-1. Visit homepage
-2. Click "Register as Driver"
-3. Fill registration form
+1. Visit homepage (/)
+2. Click "Get Started" button
+3. Navigate to /register
+4. Fill registration form
    - Email
    - Password
-4. Submit form
-5. Supabase Auth creates account
-6. Database trigger creates User record
-7. Redirect to profile creation
+   - Confirm Password
+5. Submit form (validates with Zod schema)
+6. Server Action: register() calls Supabase Auth signUp()
+7. Database trigger creates User record in public.users
+8. IF email confirmation disabled:
+   → Session created immediately → Redirect to /dashboard
+9. IF email confirmation enabled:
+   → No session → Redirect to /check-email
+   → User checks email
+   → Clicks confirmation link
+   → Redirected to /auth/callback
+   → Token verified
+   → Redirect to /login?message=confirmed
+   → User logs in
+   → Redirect to /dashboard
 ```
 
 **Files Involved:**
-- TBD: `/app/(auth)/register/page.tsx`
-- TBD: `/modules/auth/actions/register.ts`
-- Database: `users` table
+- ✅ `app/(auth)/register/page.tsx`
+- ✅ `components/auth/register-form.tsx`
+- ✅ `modules/auth/actions/register.ts`
+- ✅ `modules/auth/validations/auth.schema.ts`
+- ✅ Database trigger: `handle_new_user()`
+- ✅ Database: `users` table
+
+---
+
+### Flow 1b: User Login
+
+**Status:** ✅ Implemented in Phase 1
+
+```
+1. Visit /login (or redirected from protected route)
+2. Fill login form
+   - Email
+   - Password
+3. Submit form (validates with Zod schema)
+4. Server Action: login() calls Supabase Auth signInWithPassword()
+5. IF credentials valid:
+   → Session created
+   → Redirect to /dashboard (or preserved redirect URL)
+6. IF credentials invalid:
+   → Display error message
+   → Remain on /login
+```
+
+**Files Involved:**
+- ✅ `app/(auth)/login/page.tsx`
+- ✅ `components/auth/login-form.tsx`
+- ✅ `modules/auth/actions/login.ts`
+
+---
+
+### Flow 1c: User Logout
+
+**Status:** ✅ Implemented in Phase 1
+
+```
+1. User on /dashboard
+2. Click "Sign out" button
+3. Server Action: logout() calls Supabase Auth signOut()
+4. Session cleared
+5. Redirect to / (homepage)
+6. Protected routes now redirect to /login
+```
+
+**Files Involved:**
+- ✅ `modules/auth/actions/logout.ts`
+- ✅ `middleware.ts` (enforces auth on next request)
 
 ---
 
@@ -117,9 +176,90 @@ This document describes the complete user journeys through the TaxiLink platform
 
 ## Customer Flows
 
-### Flow 5: Find a Driver
+### Flow 3: Browse Driver Directory (Phase 3)
 
-**Status:** To be implemented in Phase 4
+**Actor:** Public user (no login required)
+
+**Entry Point:** Homepage → "Browse Drivers" or direct `/drivers`
+
+**Steps:**
+1. User visits homepage or navigates to `/drivers`
+2. System fetches all APPROVED drivers from database
+3. System displays city filter buttons (dynamically generated from approved drivers)
+4. User sees grid of driver cards showing:
+   - Profile image (if available)
+   - Display name
+   - City
+   - Vehicle type
+   - Languages
+   - Availability status badge
+5. User optionally filters by city (URL: `/drivers?city=Baltimore`)
+6. System re-queries with city filter
+7. User clicks on a driver card
+8. System navigates to `/drivers/{slug}`
+
+**Key Files:**
+- ✅ `app/(public)/drivers/page.tsx`
+- ✅ `modules/drivers/services/driver.service.ts` (getPublicDrivers, getAvailableCities)
+- ✅ `modules/drivers/repositories/driver.repository.ts` (findAllApproved, getUniqueCities)
+
+**Business Rules:**
+- Only APPROVED drivers shown
+- Featured drivers appear first (isFeatured = true)
+- Then sorted by creation date (newest first)
+- City filter preserves ordering
+
+**Result:** User can browse and filter available drivers
+
+---
+
+### Flow 4: View Driver Profile & Contact (Phase 3)
+
+**Actor:** Public user (no login required)
+
+**Entry Point:** Driver directory → Click driver card
+
+**Steps:**
+1. User clicks driver card from directory
+2. System navigates to `/drivers/{slug}`
+3. System fetches driver by slug WHERE status = 'APPROVED'
+4. If driver not found or not approved → 404 page
+5. If found, display full profile:
+   - Profile image (large, centered)
+   - Display name and city
+   - Availability status
+   - Vehicle type
+   - Languages spoken
+   - Service area description
+   - Bio (if provided)
+6. User sees two CTA buttons:
+   - "WhatsApp" (green)
+   - "Call Now" (blue)
+7. User clicks WhatsApp button:
+   - Link opens: `https://wa.me/{number}?text=Hi {name}, I found you on Movely...`
+   - Redirects to WhatsApp app/web
+8. OR user clicks Call button:
+   - Link opens: `tel:+{number}`
+   - Device initiates phone call
+
+**Key Files:**
+- ✅ `app/(public)/drivers/[slug]/page.tsx`
+- ✅ `app/(public)/drivers/[slug]/not-found.tsx`
+- ✅ `lib/utils/phone.ts` (getWhatsAppLink, getPhoneCallLink)
+- ✅ `modules/drivers/services/driver.service.ts` (getPublicProfile)
+
+**SEO/Metadata:**
+- Dynamic page title: "{Name} - {City} Driver | Movely"
+- Meta description with service details
+- OpenGraph image if profile image exists
+
+**Result:** User can view full driver profile and contact driver via WhatsApp or phone
+
+---
+
+### Flow 5: Find a Driver (Legacy - Replaced by Flow 3)
+
+**Status:** Implemented in Phase 3 (see Flow 3 above)
 
 ```
 1. Visit homepage

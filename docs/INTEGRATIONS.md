@@ -1,7 +1,7 @@
-# TaxiLink - Third-Party Integrations
+# Movely - Third-Party Integrations
 
-**Last Updated:** 2026-03-29  
-**Phase:** 0 - Configuration Complete  
+**Last Updated:** 2026-04-01  
+**Phase:** 1 - Authentication Complete  
 
 ## Overview
 
@@ -96,6 +96,37 @@ CREATE TRIGGER on_auth_user_created
 - Ensures `users.id` === `auth.users.id` (same UUID)
 - No parallel ID systems
 - Automatic sync when user registers
+
+### Phase 1 Implementation (Complete)
+
+**Auth Flow:**
+- Email/password registration via Server Actions
+- Email confirmation flow with callback handler
+- Session-based authentication with HTTP-only cookies
+- Middleware protection for protected routes
+
+**Server Actions:**
+- `modules/auth/actions/register.ts` - Handles user registration
+- `modules/auth/actions/login.ts` - Handles user login
+- `modules/auth/actions/logout.ts` - Handles logout
+- `modules/auth/actions/get-current-user.ts` - Fetches current user with role
+
+**Middleware Protection:**
+- `middleware.ts` checks authentication for `/dashboard` and `/admin`
+- No database queries in middleware (performance optimized)
+- Redirects unauthenticated users to `/login?redirect=<path>`
+- Redirects authenticated users away from auth pages
+
+**Admin Access Control:**
+- Role check performed in `app/(admin)/layout.tsx` (server-side)
+- Uses Prisma to query user role from database
+- Non-ADMIN users redirected to dashboard with error
+
+**Email Confirmation:**
+- Callback handler at `/auth/callback` 
+- Uses `EmailOtpType` from `@supabase/supabase-js`
+- Redirects to `/login?message=confirmed` on success
+- `/check-email` page displays instructions
 
 ### Session Management
 

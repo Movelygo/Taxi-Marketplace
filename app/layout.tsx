@@ -8,8 +8,12 @@ const geist = Geist({subsets:['latin'],variable:'--font-sans'});
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "TaxiLink - Find Trusted Local Taxi Drivers",
-  description: "Connect with reliable independent taxi drivers in Maryland, Baltimore, and DC area",
+  title: {
+    default: 'Movely - Connect with Trusted Taxi Drivers',
+    template: '%s | Movely'
+  },
+  description: 'Find and connect with trusted independent taxi drivers in the Maryland/Baltimore/DC area',
+  keywords: ['taxi', 'driver', 'Maryland', 'Baltimore', 'DC', 'transportation'],
 };
 
 export default function RootLayout({

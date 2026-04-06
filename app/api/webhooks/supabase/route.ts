@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
 
-export async function POST(request: Request) {
-  // Supabase webhook handler - to be implemented in Phase 1
-  // This will sync auth.users with our users table
-  return NextResponse.json({ message: 'Webhook handler - Phase 1' })
+export async function POST(_request: Request) {
+  // Supabase webhook handler - placeholder
+  // User sync is handled by database trigger, not webhook
+  return NextResponse.json({ message: 'Webhook handler - not needed for Phase 1' })
 }

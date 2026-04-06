@@ -1,8 +1,188 @@
-# TaxiLink - Changelog
+# Movely - Changelog
 
 All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
+
+---
+
+## [Phase 3] - 2026-04-02
+
+### Public Driver Directory & Profiles
+
+**Summary:** Public-facing driver directory and individual driver profile pages with contact CTAs.
+
+### Added
+
+- Public driver directory page (`/drivers`)
+- Public driver profile pages (`/drivers/{slug}`)
+- City-based filtering for driver directory
+- WhatsApp and Call CTA buttons on driver profiles
+- SEO metadata generation for driver profiles
+- 404 page for unavailable drivers
+
+### Technical Implementation
+
+- **Repository Methods:**
+  - `findApprovedBySlug` - Fetch single approved driver by slug
+  - `findAllApproved` - Fetch all approved drivers with optional city filter
+  - `getUniqueCities` - Get list of cities with approved drivers
+- **Service Methods:**
+  - `getPublicProfile` - Public access to approved driver profile
+  - `getPublicDrivers` - List approved drivers with filtering
+  - `getAvailableCities` - Cities for filter UI
+- **Public Pages:**
+  - `/drivers` - Directory with city filter
+  - `/drivers/[slug]` - Individual driver profile
+  - `/drivers/[slug]/not-found` - Custom 404
+
+### Features
+
+- **Directory:**
+  - Grid layout of driver cards
+  - City filter pills (dynamic from data)
+  - Shows: image, name, city, vehicle, languages, availability
+  - Mobile-friendly responsive design
+- **Profile:**
+  - Full driver information display
+  - Profile image (large, centered)
+  - Service area and bio
+  - Contact CTAs (WhatsApp, Call)
+  - Dynamic SEO metadata
+  - OpenGraph support for sharing
+
+### Business Rules
+
+- Only `APPROVED` drivers visible publicly
+- Featured drivers shown first
+- Slug-based URLs for SEO
+- 404 for unapproved/missing drivers
+
+### Updated Files
+
+- Homepage: Added "Browse Drivers" CTA
+- Architecture docs: Added public flow diagrams
+- User flows: Added customer browsing flows
+
+---
+
+## [Phase 2] - 2026-04-02
+
+### Driver Profile Management
+
+**Summary:** Complete driver profile management system with profile creation, editing, image upload, and status management.
+
+### Added
+
+- Driver profile creation form
+- Driver profile editing functionality
+- Profile image upload to Supabase Storage
+- Unique slug generation for driver profiles
+- Profile status display on dashboard (PENDING/APPROVED/REJECTED/SUSPENDED)
+- Availability status management (AVAILABLE/BUSY/OFFLINE)
+- Validation schemas for driver profile fields
+- Repository pattern for driver data access
+- Service layer with business logic
+
+### Technical Implementation
+
+- **Server Actions:**
+  - `createProfile` - Create new driver profile
+  - `updateProfile` - Update existing profile
+  - `uploadProfileImage` - Upload profile image to Supabase Storage
+- **Components:**
+  - `ProfileForm` - Driver profile form (create/edit)
+  - `ProfileImageUpload` - Image upload with preview
+- **Services:**
+  - `DriverService` - Profile management business logic
+  - `DriverRepository` - Database access layer
+- **Validations:**
+  - Zod schemas for create and update operations
+  - File type and size validation for images
+  - Unique slug generation with collision handling
+
+### Dashboard Updates
+
+- Profile status card showing current profile state
+- Quick access to create/edit profile
+- Profile summary with status indicators
+- Conditional UI based on profile existence
+
+### Module Structure
+
+```
+modules/drivers/
+├── actions/
+│   ├── create-profile.ts
+│   ├── update-profile.ts
+│   └── upload-profile-image.ts
+├── repositories/
+│   └── driver.repository.ts
+├── services/
+│   └── driver.service.ts
+└── validations/
+    └── driver.schema.ts
+```
+
+---
+
+## [Phase 1] - 2026-04-01
+
+### Authentication & User Sync
+
+**Summary:** Complete authentication system with Supabase Auth, email confirmation flow, protected routes, and role-based access control.
+
+### Added
+
+- **Authentication System**
+  - Email/password registration with Supabase Auth
+  - Login/logout functionality  
+  - Email confirmation flow with `/check-email` page
+  - Callback handler at `/auth/callback` for email verification
+  - Session management via HTTP-only cookies
+  
+- **Server Actions**
+  - `register.ts` - User registration with email confirmation detection
+  - `login.ts` - User authentication with redirect parameter support
+  - `logout.ts` - Session termination
+  - `getCurrentUser.ts` - Fetch authenticated user with role from database
+
+- **Protected Routes**
+  - Middleware protection for `/dashboard` and `/admin`
+  - Authentication check only (no database queries in middleware)
+  - Role-based access in admin layout (server-side Prisma query)
+  - Redirect preservation with `?redirect=` parameter
+
+- **Auth Pages**
+  - `/register` - Registration form with validation
+  - `/login` - Login form with confirmation messages
+  - `/check-email` - Email verification instructions
+  - Updated dashboard with user info and logout button
+  - Updated homepage with branding and auth links
+
+- **UI Components (shadcn/ui)**
+  - Button, Input, Label, Card, Alert components
+  - RegisterForm and LoginForm client components
+  - Error boundary and loading states
+
+- **Branding**
+  - Rebranded from TaxiLink to Movely
+  - Integrated logo assets (`/public/logo/`)
+  - Updated metadata in root layout
+
+### Changed
+
+- Updated `middleware.ts` with two-tier protection (dashboard + admin)
+- Updated `app/layout.tsx` with Movely branding metadata
+- Updated admin layout with server-side role check
+- Database trigger already created in Phase 0 (no changes needed)
+
+### Technical Details
+
+- Email confirmation redirects to `/login?message=confirmed`
+- Admin role check uses Prisma query in layout (not middleware)
+- Session refresh handled automatically by Supabase SSR
+- Used proper TypeScript types from `@supabase/supabase-js`
 
 ---
 

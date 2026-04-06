@@ -1,7 +1,7 @@
-# TaxiLink - Database Schema
+# Movely - Database Schema
 
-**Last Updated:** 2026-03-29  
-**Phase:** 0 - Initial Setup  
+**Last Updated:** 2026-04-02  
+**Phase:** 2 - Driver Profile Management Complete  
 
 ## Entity Relationship Diagram
 

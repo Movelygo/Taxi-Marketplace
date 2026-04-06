@@ -1,11 +1,11 @@
-# TaxiLink - System Architecture
+# Movely - System Architecture
 
-**Last Updated:** 2026-03-29  
-**Phase:** 0 - Initial Setup  
+**Last Updated:** 2026-04-02  
+**Phase:** 3 - Public Directory Complete  
 
 ## Overview
 
-TaxiLink follows a **monolithic architecture** organized by **business domains** (modules). This design prioritizes simplicity, clarity, and progressive scalability over premature optimization.
+Movely follows a **monolithic architecture** organized by **business domains** (modules). This design prioritizes simplicity, clarity, and progressive scalability over premature optimization.
 
 ## Architecture Diagram
 
@@ -180,21 +180,233 @@ class DriverRepository {
 }
 ```
 
-## Authentication Flow
+## Authentication Flow (Phase 1 - Implemented)
+
+### Registration Flow
 
 ```
-1. User registers/logs in
+1. User submits registration form (/register)
    ↓
-2. Supabase Auth creates user in auth.users
+2. Client component: RegisterForm validates input
    ↓
-3. Database trigger creates record in our users table
+3. Server Action: register() validates with Zod
    ↓
-4. User.id === auth.users.id (same UUID)
+4. Supabase Auth: signUp() creates user in auth.users
    ↓
-5. Middleware validates session on each request
+5. Database Trigger: handle_new_user() creates record in public.users
+   ↓
+6. User.id === auth.users.id (same UUID) ✓
+   ↓
+7. IF session exists: Redirect to /dashboard
+   IF no session: Redirect to /check-email (email confirmation required)
 ```
 
-**Critical:** `User.id` in our database **MUST** match `auth.users.id` in Supabase. No parallel IDs.
+### Login Flow
+
+```
+1. User submits login form (/login)
+   ↓
+2. Client component: LoginForm validates input
+   ↓
+3. Server Action: login() validates with Zod
+   ↓
+4. Supabase Auth: signInWithPassword() validates credentials
+   ↓
+5. Session created in HTTP-only cookie
+   ↓
+6. Redirect to /dashboard (or preserved redirect URL)
+```
+
+### Middleware Protection
+
+```
+1. Every request hits middleware.ts
+   ↓
+2. Supabase SSR client validates session
+   ↓
+3. IF route is /dashboard or /admin AND no user:
+     → Redirect to /login?redirect=<path>
+   ↓
+4. IF route is /login or /register AND user exists:
+     → Redirect to /dashboard
+   ↓
+5. Continue to requested page
+```
+
+**Key Points:**
+- No database queries in middleware (performance optimized)
+- Admin role check happens in `app/(admin)/layout.tsx` (server-side Prisma query)
+- Session stored in HTTP-only cookies (secure)
+- `User.id` in database **MUST** match `auth.users.id` in Supabase (enforced by trigger)
+
+## Driver Profile Management Flow (Phase 2 - Implemented)
+
+### Create Profile Flow
+
+```
+1. User navigates to /dashboard/profile
+   ↓
+2. ProfileForm component renders with empty state
+   ↓
+3. User fills profile fields (displayName, phone, city, etc.)
+   ↓
+4. Server Action: createProfile() validates with Zod
+   ↓
+5. Service Layer: DriverService.createProfile()
+   - Generates unique slug from displayName
+   - Parses comma-separated languages
+   ↓
+6. Repository Layer: DriverRepository.create()
+   ↓
+7. Prisma creates Driver record linked to User
+   ↓
+8. Redirect to /dashboard with profile displayed
+```
+
+### Update Profile Flow
+
+```
+1. User clicks "Edit Profile" on dashboard
+   ↓
+2. ProfileForm renders with existing profile data
+   ↓
+3. User modifies fields
+   ↓
+4. Server Action: updateProfile() validates changes
+   ↓
+5. Service Layer: DriverService.updateProfile()
+   ↓
+6. Repository Layer: DriverRepository.update()
+   ↓
+7. Page revalidates, shows updated data + success message
+```
+
+### Profile Image Upload Flow
+
+```
+1. User selects image file
+   ↓
+2. Client preview displays selected image
+   ↓
+3. User submits form
+   ↓
+4. Server Action: uploadProfileImage()
+   - Validates file size (max 5MB)
+   - Validates file type (JPEG, PNG, WebP)
+   ↓
+5. Upload to Supabase Storage bucket 'driver-images'
+   ↓
+6. Get public URL from Supabase
+   ↓
+7. Update Driver.profileImageUrl via DriverService
+   ↓
+8. Revalidate page, show new image
+```
+
+### Slug Generation
+
+```
+1. Extract displayName (e.g., "John Smith")
+   ↓
+2. Convert to lowercase, remove special chars
+   ↓
+3. Replace spaces with hyphens (e.g., "john-smith")
+   ↓
+4. Check if slug exists in database
+   ↓
+5. If exists, append counter (e.g., "john-smith-2")
+   ↓
+6. Return unique slug
+```
+
+**Key Points:**
+- One profile per user (enforced by unique userId constraint)
+- Slug must be unique across all drivers
+- Profile status defaults to PENDING (admin approval needed)
+- Languages stored as array, input as comma-separated string
+- Image upload uses Supabase Storage (not filesystem)
+
+## Public Directory & Profile Pages (Phase 3 - Implemented)
+
+### Public Driver Directory Flow
+
+```
+1. User visits /drivers
+   ↓
+2. Server fetches approved drivers via DriverService.getPublicDrivers()
+   ↓
+3. Repository queries: WHERE status = 'APPROVED'
+   ↓
+4. Optional city filter applied (?city=Baltimore)
+   ↓
+5. Results ordered by: isFeatured DESC, createdAt DESC
+   ↓
+6. Display driver cards with:
+   - Profile image (if exists)
+   - Display name
+   - City
+   - Vehicle type
+   - Languages
+   - Availability status
+   ↓
+7. User clicks driver card → navigate to /drivers/{slug}
+```
+
+### Public Driver Profile View Flow
+
+```
+1. User visits /drivers/{slug}
+   ↓
+2. Server calls DriverService.getPublicProfile(slug)
+   ↓
+3. Repository queries: WHERE slug = {slug} AND status = 'APPROVED'
+   ↓
+4. If not found or not approved → 404 (notFound())
+   ↓
+5. If found → display full profile:
+   - Profile image
+   - Display name, city
+   - Availability status
+   - Vehicle type, languages
+   - Service area description
+   - Bio (if exists)
+   - CTA buttons (WhatsApp, Call)
+   ↓
+6. SEO metadata generated:
+   - Dynamic title: "{Name} - {City} Driver | Movely"
+   - Description with service details
+   - OpenGraph image if profile image exists
+```
+
+### CTA Interaction Flow
+
+```
+1. User clicks "WhatsApp" button
+   ↓
+2. Link generated via getWhatsAppLink(whatsappNumber, message)
+   ↓
+3. Opens: https://wa.me/{number}?text={encodedMessage}
+   ↓
+4. User redirected to WhatsApp app/web
+
+OR
+
+1. User clicks "Call Now" button
+   ↓
+2. Link generated via getPhoneCallLink(phone)
+   ↓
+3. Opens: tel:+{number}
+   ↓
+4. Device initiates phone call
+```
+
+**Key Points:**
+- Only APPROVED drivers visible publicly
+- Slug-based URLs for SEO (`/drivers/john-smith`)
+- City filter preserves featured/recent ordering
+- CTA buttons use utility functions from `lib/utils/phone.ts`
+- Dynamic metadata for social sharing
+- 404 page for unapproved/non-existent drivers
 
 ## File Upload Flow
 
@@ -231,11 +443,14 @@ class DriverRepository {
 5. Client redirected to WhatsApp/phone app
 ```
 
-## Middleware Responsibilities
+## Middleware Responsibilities (Phase 1 - Implemented)
 
-- Session refresh (Supabase Auth)
-- Route protection (future phases)
-- Request logging (future phases)
+- ✅ Session refresh (Supabase Auth automatic)
+- ✅ Route protection for `/dashboard` and `/admin`
+- ✅ Redirect unauthenticated users to `/login`
+- ✅ Redirect authenticated users away from auth pages
+- ✅ Preserve intended destination with `?redirect=` parameter
+- ⏸️ Request logging (future phases)
 
 ## Error Handling Strategy
 

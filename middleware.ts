@@ -14,7 +14,7 @@ export async function middleware(request: NextRequest) {
         getAll() {
           return request.cookies.getAll()
         },
-        setAll(cookiesToSet) {
+        setAll(cookiesToSet: { name: string; value: string; options?: any }[]) {
           cookiesToSet.forEach(({ name, value }) =>
             request.cookies.set(name, value)
           )
@@ -30,10 +30,33 @@ export async function middleware(request: NextRequest) {
   )
 
   // Refresh session if expired - this happens automatically
-  await supabase.auth.getUser()
+  const { data: { user } } = await supabase.auth.getUser()
 
-  // Protected routes will be added in Phase 1
-  // This is basic setup for now
+  // Protect /dashboard - requires authenticated user
+  if (request.nextUrl.pathname.startsWith('/dashboard')) {
+    if (!user) {
+      return NextResponse.redirect(
+        new URL(`/login?redirect=${request.nextUrl.pathname}`, request.url)
+      )
+    }
+  }
+
+  // Protect /admin - requires authenticated user (role check in layout)
+  if (request.nextUrl.pathname.startsWith('/admin')) {
+    if (!user) {
+      return NextResponse.redirect(
+        new URL(`/login?redirect=${request.nextUrl.pathname}`, request.url)
+      )
+    }
+  }
+
+  // Redirect authenticated users away from auth pages
+  if (request.nextUrl.pathname.startsWith('/login') || 
+      request.nextUrl.pathname.startsWith('/register')) {
+    if (user) {
+      return NextResponse.redirect(new URL('/dashboard', request.url))
+    }
+  }
 
   return supabaseResponse
 }
