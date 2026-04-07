@@ -6,6 +6,115 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ---
 
+## [Phase 5] - 2026-04-06
+
+### Lead Tracking + Profile View Tracking + Driver Metrics
+
+**Summary:** Track public driver profile views and contact actions, display basic metrics in driver dashboard.
+
+### Added
+
+- Profile view tracking with 30-minute deduplication window
+- Lead tracking for WhatsApp and Call CTAs
+- Driver dashboard metrics display:
+  - Profile views count
+  - Total leads count
+  - WhatsApp leads count
+  - Call leads count
+- Tracking modules:
+  - `modules/leads` - Lead tracking repository, service, actions
+  - `modules/profile-views` - Profile view tracking repository, service, actions
+  - `modules/drivers/services/driver-metrics.service.ts` - Metrics aggregation
+- UI components:
+  - `TrackProfileView` - Client component for automatic profile view tracking
+  - `LeadTrackingButtons` - Client component for CTA with lead tracking
+  - `DriverMetrics` - Dashboard metrics cards
+- Server actions:
+  - `trackProfileView()` - Track profile view with deduplication
+  - `trackLead()` - Track lead (WhatsApp/Call)
+
+### Changed
+
+- Updated public driver profile page (`/drivers/[slug]`) to include tracking
+- Updated driver dashboard (`/dashboard`) to display metrics
+- Updated `docs/ARCHITECTURE.md` with tracking flows
+- Updated `docs/USER_FLOWS.md` with metrics flow
+
+### Technical
+
+- **IP Hashing:** SHA-256 for privacy
+- **Deduplication:** 30-minute window for profile views
+- **Storage:** PostgreSQL via Prisma (no external dependencies)
+- **Metrics:** Real-time queries (no caching)
+- **Tracking:** Background, non-blocking, no UI impact
+
+### Database Impact
+
+- Uses existing `profile_views` and `leads` tables
+- Increments `driver.viewCount` on unique views
+- All queries use indexed columns for performance
+
+### Business Rules
+
+- Only APPROVED drivers tracked (others not publicly visible)
+- Profile views deduplicated per IP + driver + 30-min window
+- Leads not deduplicated (every click counts)
+- Metrics visible only to profile owner
+- Tracking happens silently (no user notification)
+
+---
+
+## [Phase 4] - 2026-04-06
+
+### Admin Driver Review & Status Management
+
+**Summary:** Admin dashboard for reviewing driver profiles and managing their public visibility through status changes.
+
+### Added
+
+- Admin driver list page (`/admin/drivers`) with status filtering
+- Admin driver detail/review page (`/admin/drivers/[id]`)
+- Status filter tabs with live counts (PENDING, APPROVED, REJECTED, SUSPENDED)
+- Status management actions (Approve, Reject, Suspend, Set to Pending)
+- Featured driver toggle functionality
+- Color-coded status badges
+- Admin repository layer (`AdminRepository`)
+- Admin service layer (`AdminService`)
+- Server actions for status management:
+  - `updateDriverStatus()`
+  - `toggleFeatured()`
+- UI components:
+  - `StatusBadge` - Color-coded status display
+  - `DriverStatusActions` - Action buttons with state management
+
+### Changed
+
+- Updated `docs/ARCHITECTURE.md` with admin driver review flow
+- Updated `docs/USER_FLOWS.md` with admin review flow
+- Updated `docs/ADMIN_OPERATIONS.md` with Phase 4 implementation details
+
+### Technical
+
+- **Module:** `/modules/admin`
+  - Repositories for data access
+  - Services for business logic
+  - Server actions for status management
+- **UI:** Clean table-based driver list with efficient scanning
+- **Security:** Admin role verification on all routes and actions
+- **Revalidation:** Automatic path revalidation on status changes affects:
+  - Admin driver list
+  - Admin driver detail
+  - Public driver directory
+
+### Business Rules
+
+- Only APPROVED drivers appear in public directory (`/drivers`)
+- Status changes are immediate and reflect across all views
+- Featured flag available but not yet used in public sorting
+- Admin actions require ADMIN role verification
+
+---
+
 ## [Phase 3] - 2026-04-02
 
 ### Public Driver Directory & Profiles

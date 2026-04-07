@@ -5,6 +5,8 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { DriverService } from '@/modules/drivers/services/driver.service'
+import { DriverMetricsService } from '@/modules/drivers/services/driver-metrics.service'
+import { DriverMetrics } from '@/components/dashboard/driver-metrics'
 import Link from 'next/link'
 import Image from 'next/image'
 
@@ -21,6 +23,11 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
 
   const params = await searchParams
   const profile = await DriverService.getProfile(user.id)
+  
+  let metrics = null
+  if (profile) {
+    metrics = await DriverMetricsService.getMetrics(profile.id)
+  }
 
   return (
     <div className="container mx-auto px-4 py-8 max-w-4xl">
@@ -41,6 +48,18 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
             </Button>
           </form>
         </div>
+
+        {profile && metrics && (
+          <div>
+            <h2 className="text-xl font-semibold mb-4">Your Metrics</h2>
+            <DriverMetrics 
+              profileViews={metrics.profileViews}
+              totalLeads={metrics.totalLeads}
+              whatsappLeads={metrics.whatsappLeads}
+              callLeads={metrics.callLeads}
+            />
+          </div>
+        )}
 
         <Card>
           <CardHeader>

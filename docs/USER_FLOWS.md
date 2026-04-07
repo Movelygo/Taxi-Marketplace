@@ -1,7 +1,7 @@
 # Movely - User Flows
 
-**Last Updated:** 2026-04-02  
-**Phase:** 3 - Public Directory Complete  
+**Last Updated:** 2026-04-06  
+**Phase:** 5 - Lead Tracking & Metrics Complete  
 
 ## Overview
 
@@ -174,6 +174,67 @@ This document describes the complete user journeys through the Movely platform f
 
 ---
 
+## Admin Flows
+
+### Flow 5: Admin - Review and Manage Driver Profiles
+
+**Actor:** Admin User  
+**Goal:** Review pending driver profiles and control public visibility
+
+#### Steps
+
+1. **Access Admin Area**
+   - Navigate to `/admin` 
+   - Click "Driver Management"
+   - OR navigate directly to `/admin/drivers`
+
+2. **View Driver List**
+   - See all drivers by default
+   - Status filter tabs show counts:
+     - PENDING (X)
+     - APPROVED (X)
+     - REJECTED (X)
+     - SUSPENDED (X)
+   - Click status tab to filter
+
+3. **Review Driver Details**
+   - Click "Review" button on any driver
+   - Navigates to `/admin/drivers/[id]`
+   - View complete profile:
+     - Display name and slug
+     - Contact: phone, WhatsApp
+     - Location: city, service area
+     - Vehicle type and languages
+     - Bio (if provided)
+     - Profile image (if uploaded)
+     - Featured status
+     - Created/updated timestamps
+
+4. **Take Action**
+   - **Approve:** Driver becomes publicly visible
+   - **Reject:** Driver does not appear publicly
+   - **Suspend:** Remove previously approved driver from public view
+   - **Set to Pending:** Return to pending status
+   - **Toggle Featured:** Mark/unmark as featured
+
+5. **Verify Changes**
+   - Success message confirms action
+   - Status badge updates immediately
+   - For approved drivers: "View Public Profile" link appears
+   - Public directory reflects changes after revalidation
+
+#### Business Rules
+
+- Only ADMIN role can access `/admin/drivers`
+- Status changes trigger revalidation of:
+  - Admin driver list
+  - Admin driver detail
+  - Public driver directory
+- Only APPROVED drivers appear in `/drivers`
+- Featured flag available but not used in public UI yet
+
+---
+
 ## Customer Flows
 
 ### Flow 3: Browse Driver Directory (Phase 3)
@@ -253,7 +314,62 @@ This document describes the complete user journeys through the Movely platform f
 - Meta description with service details
 - OpenGraph image if profile image exists
 
+**Tracking (Phase 5):**
+- Profile view tracked automatically on page load
+- Deduplication: Same IP within 30 minutes = 1 view
+- Lead tracked when user clicks WhatsApp or Call button
+- All tracking happens in background, no UI impact
+
 **Result:** User can view full driver profile and contact driver via WhatsApp or phone
+
+---
+
+### Flow 7: Driver - View Dashboard Metrics (Phase 5)
+
+**Actor:** Driver (authenticated)  
+**Goal:** Check performance metrics
+
+#### Steps
+
+1. **Access Dashboard**
+   - Navigate to `/dashboard`
+   - Already authenticated
+
+2. **View Metrics Cards**
+   - See four metric cards:
+     - **Profile Views** - Total unique profile visits (30-min deduplication)
+     - **Total Leads** - All contact attempts
+     - **WhatsApp Leads** - Green card with WhatsApp count
+     - **Call Leads** - Blue card with phone call count
+
+3. **Understand Metrics**
+   - Profile views = unique visitors to profile page
+   - Leads = actual contact button clicks
+   - Breakdown by contact method (WhatsApp vs Call)
+
+#### Business Rules
+
+- Metrics updated in real-time (no caching)
+- Profile views deduplicated by IP + 30-minute window
+- Leads not deduplicated (every click counts)
+- Only drivers with profiles see metrics
+- Metrics start from profile creation date
+
+#### Technical Flow
+
+```
+Dashboard Page
+    ↓
+DriverMetricsService.getMetrics(driverId)
+    ↓
+Parallel queries:
+  - ProfileViewService.getViewCountByDriver()
+  - LeadService.getLeadCountByDriver()
+  - LeadService.getLeadCountBySource('WHATSAPP')
+  - LeadService.getLeadCountBySource('CALL')
+    ↓
+Display DriverMetrics component
+```
 
 ---
 

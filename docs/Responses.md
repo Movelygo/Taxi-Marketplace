@@ -6,97 +6,125 @@
 
 
 
-# Phase 3: Public Driver Directory & Profile Pages - Complete
+
+
+
+
+
+
+# Phase 4: Admin Driver Review & Status Management - Complete
 
 ## 1. Summary
 
-Implemented public-facing driver discovery system:
-- ✅ Public driver directory at `/drivers` with city filtering
-- ✅ Individual driver profile pages at `/drivers/{slug}`
-- ✅ Only APPROVED drivers visible to public
-- ✅ WhatsApp and Call CTA buttons with pre-filled messages
-- ✅ Dynamic SEO metadata and OpenGraph support
-- ✅ Custom 404 for unapproved/missing drivers
-- ✅ Mobile-first responsive design
-- ✅ Clean, minimal UI with soft colors
+Implemented complete admin interface for reviewing driver profiles and managing public visibility through status changes:
+- ✅ Admin driver list with status filtering (PENDING, APPROVED, REJECTED, SUSPENDED)
+- ✅ Admin driver detail/review page with full profile display
+- ✅ Status management actions (Approve, Reject, Suspend, Set to Pending)
+- ✅ Featured driver toggle
+- ✅ Color-coded status badges with live counts
+- ✅ Role-based access control (ADMIN only)
+- ✅ Path revalidation on status changes
 
 ---
 
 ## 2. Changed Files
 
-### New Files (4 files)
-- `app/(public)/drivers/page.tsx` - Public directory listing
-- `app/(public)/drivers/[slug]/page.tsx` - Individual driver profile
-- `app/(public)/drivers/[slug]/not-found.tsx` - Custom 404
-- [docs/PHASE_REPORTS/PHASE_3_PUBLIC_DIRECTORY.md](cci:7://file:///Users/juanortega/Documents/Taxi%20Marketplace/docs/PHASE_REPORTS/PHASE_3_PUBLIC_DIRECTORY.md:0:0-0:0) - Phase report
+### New Files (9 files)
 
-### Modified Files (6 files)
-- [modules/drivers/repositories/driver.repository.ts](cci:7://file:///Users/juanortega/Documents/Taxi%20Marketplace/modules/drivers/repositories/driver.repository.ts:0:0-0:0) - Added public query methods
-- [modules/drivers/services/driver.service.ts](cci:7://file:///Users/juanortega/Documents/Taxi%20Marketplace/modules/drivers/services/driver.service.ts:0:0-0:0) - Added public service methods
-- `app/(public)/page.tsx` - Added "Browse Drivers" CTA
-- [docs/ARCHITECTURE.md](cci:7://file:///Users/juanortega/Documents/Taxi%20Marketplace/docs/ARCHITECTURE.md:0:0-0:0) - Added public directory flows
-- [docs/USER_FLOWS.md](cci:7://file:///Users/juanortega/Documents/Taxi%20Marketplace/docs/USER_FLOWS.md:0:0-0:0) - Added customer browsing flows
-- [docs/CHANGELOG.md](cci:7://file:///Users/juanortega/Documents/Taxi%20Marketplace/docs/CHANGELOG.md:0:0-0:0) - Added Phase 3 entry
+**Module Layer:**
+- [modules/admin/repositories/admin.repository.ts](cci:7://file:///Users/juanortega/Documents/Taxi%20Marketplace/modules/admin/repositories/admin.repository.ts:0:0-0:0)
+- [modules/admin/services/admin.service.ts](cci:7://file:///Users/juanortega/Documents/Taxi%20Marketplace/modules/admin/services/admin.service.ts:0:0-0:0)
+- [modules/admin/actions/update-driver-status.ts](cci:7://file:///Users/juanortega/Documents/Taxi%20Marketplace/modules/admin/actions/update-driver-status.ts:0:0-0:0)
+- [modules/admin/actions/toggle-featured.ts](cci:7://file:///Users/juanortega/Documents/Taxi%20Marketplace/modules/admin/actions/toggle-featured.ts:0:0-0:0)
 
-**Total: 10 files (4 new, 6 modified)**
+**Components:**
+- [components/admin/status-badge.tsx](cci:7://file:///Users/juanortega/Documents/Taxi%20Marketplace/components/admin/status-badge.tsx:0:0-0:0)
+- [components/admin/driver-status-actions.tsx](cci:7://file:///Users/juanortega/Documents/Taxi%20Marketplace/components/admin/driver-status-actions.tsx:0:0-0:0)
+
+**Pages:**
+- `app/(dashboard)/admin/drivers/page.tsx`
+- `app/(dashboard)/admin/drivers/[id]/page.tsx`
+
+**Documentation:**
+- [docs/PHASE_REPORTS/PHASE_4_ADMIN_DRIVER_REVIEW.md](cci:7://file:///Users/juanortega/Documents/Taxi%20Marketplace/docs/PHASE_REPORTS/PHASE_4_ADMIN_DRIVER_REVIEW.md:0:0-0:0)
+
+### Modified Files (4 files)
+- [docs/ARCHITECTURE.md](cci:7://file:///Users/juanortega/Documents/Taxi%20Marketplace/docs/ARCHITECTURE.md:0:0-0:0) - Added admin driver review flow
+- [docs/USER_FLOWS.md](cci:7://file:///Users/juanortega/Documents/Taxi%20Marketplace/docs/USER_FLOWS.md:0:0-0:0) - Added admin review flow
+- [docs/ADMIN_OPERATIONS.md](cci:7://file:///Users/juanortega/Documents/Taxi%20Marketplace/docs/ADMIN_OPERATIONS.md:0:0-0:0) - Updated implementation status
+- [docs/CHANGELOG.md](cci:7://file:///Users/juanortega/Documents/Taxi%20Marketplace/docs/CHANGELOG.md:0:0-0:0) - Added Phase 4 entry
+
+**Total: 13 files (9 new, 4 modified)**
 
 ---
 
-## 3. Phase 3 Report Path
+## 3. Phase 4 Report Path
 
-**[docs/PHASE_REPORTS/PHASE_3_PUBLIC_DIRECTORY.md](cci:7://file:///Users/juanortega/Documents/Taxi%20Marketplace/docs/PHASE_REPORTS/PHASE_3_PUBLIC_DIRECTORY.md:0:0-0:0)**
+**[docs/PHASE_REPORTS/PHASE_4_ADMIN_DRIVER_REVIEW.md](cci:7://file:///Users/juanortega/Documents/Taxi%20Marketplace/docs/PHASE_REPORTS/PHASE_4_ADMIN_DRIVER_REVIEW.md:0:0-0:0)**
 
 ---
 
 ## 4. Key Files
 
-### Public Directory Page
-**`app/(public)/drivers/page.tsx`**
-- Fetches approved drivers via [DriverService.getPublicDrivers(city?)](cci:1://file:///Users/juanortega/Documents/Taxi%20Marketplace/modules/drivers/services/driver.service.ts:56:2-58:3)
-- Fetches available cities via [DriverService.getAvailableCities()](cci:1://file:///Users/juanortega/Documents/Taxi%20Marketplace/modules/drivers/services/driver.service.ts:60:2-62:3)
-- Displays responsive grid of driver cards
-- City filter pills (dynamic from data)
-- Shows: image, name, city, vehicle, languages, availability
-- Empty state when no drivers found
+### Admin Driver List Page
+**`app/(dashboard)/admin/drivers/page.tsx`**
+- Server component with role verification
+- Status filter tabs with live counts
+- Query param filtering: `?status=PENDING`
+- Responsive table showing:
+  - Driver name (with ★ for featured)
+  - City, vehicle type
+  - Color-coded status badge
+  - Created date
+  - Review button
+- Empty state for filtered results
+- Redirects non-admin users to dashboard
 
-### Public Driver Profile Page
-**`app/(public)/drivers/[slug]/page.tsx`**
-- Fetches driver via [DriverService.getPublicProfile(slug)](cci:1://file:///Users/juanortega/Documents/Taxi%20Marketplace/modules/drivers/services/driver.service.ts:52:2-54:3)
-- Returns 404 if driver not found or not APPROVED
-- Displays full profile information
-- WhatsApp CTA: Opens with pre-filled message
-- Call CTA: Opens `tel:` link
-- Dynamic SEO metadata generation
+### Admin Driver Detail/Review Page
+**`app/(dashboard)/admin/drivers/[id]/page.tsx`**
+- Server component with dynamic metadata
+- Two-column layout:
+  - **Main:** Complete driver profile with all fields
+  - **Sidebar:** Status action buttons
+- Shows profile image if available
+- Status-dependent "View Public Profile" link
+- Returns 404 if driver not found
 
-### Repository Methods
-**[modules/drivers/repositories/driver.repository.ts](cci:7://file:///Users/juanortega/Documents/Taxi%20Marketplace/modules/drivers/repositories/driver.repository.ts:0:0-0:0)**
+### Admin Status-Change Server Actions
+
+**[modules/admin/actions/update-driver-status.ts](cci:7://file:///Users/juanortega/Documents/Taxi%20Marketplace/modules/admin/actions/update-driver-status.ts:0:0-0:0)**
 ```typescript
-// Fetch single approved driver by slug
-static async findApprovedBySlug(slug: string): Promise<Driver | null>
-
-// Fetch all approved drivers with optional city filter
-static async findAllApproved(city?: string): Promise<Driver[]>
-
-// Get unique cities from approved drivers
-static async getUniqueCities(): Promise<string[]>
+export async function updateDriverStatus(driverId: string, status: DriverStatus)
 ```
+- Verifies user authentication and ADMIN role
+- Calls [AdminService.updateDriverStatus()](cci:1://file:///Users/juanortega/Documents/Taxi%20Marketplace/modules/admin/services/admin.service.ts:12:2-14:3)
+- Revalidates paths: `/admin/drivers`, `/admin/drivers/[id]`, `/drivers`
+- Returns `{ success: true }` or `{ error: string }`
 
-### Service Methods
-**[modules/drivers/services/driver.service.ts](cci:7://file:///Users/juanortega/Documents/Taxi%20Marketplace/modules/drivers/services/driver.service.ts:0:0-0:0)**
+**[modules/admin/actions/toggle-featured.ts](cci:7://file:///Users/juanortega/Documents/Taxi%20Marketplace/modules/admin/actions/toggle-featured.ts:0:0-0:0)**
 ```typescript
-static async getPublicProfile(slug: string): Promise<Driver | null>
-static async getPublicDrivers(city?: string): Promise<Driver[]>
-static async getAvailableCities(): Promise<string[]>
+export async function toggleFeatured(driverId: string, isFeatured: boolean)
 ```
+- Same security checks as updateDriverStatus
+- Calls [AdminService.toggleFeatured()](cci:1://file:///Users/juanortega/Documents/Taxi%20Marketplace/modules/admin/services/admin.service.ts:16:2-18:3)
+- Revalidates same paths
+- Returns success/error state
 
-### SEO Metadata
-**Dynamic metadata in `app/(public)/drivers/[slug]/page.tsx`**
-```typescript
-export async function generateMetadata({ params }: DriverProfilePageProps): Promise<Metadata> {
-  // Generates dynamic title, description, and OpenGraph metadata
-  // Example: "John Smith - Baltimore Driver | Movely"
-}
-```
+### Repository/Service Methods Used
+
+**AdminRepository** ([modules/admin/repositories/admin.repository.ts](cci:7://file:///Users/juanortega/Documents/Taxi%20Marketplace/modules/admin/repositories/admin.repository.ts:0:0-0:0)):
+- [findAllDrivers(status?)](cci:1://file:///Users/juanortega/Documents/Taxi%20Marketplace/modules/admin/repositories/admin.repository.ts:4:2-9:3) - Get drivers with optional status filter
+- [findDriverById(id)](cci:1://file:///Users/juanortega/Documents/Taxi%20Marketplace/modules/admin/repositories/admin.repository.ts:11:2-15:3) - Get single driver by ID
+- [updateDriverStatus(id, status)](cci:1://file:///Users/juanortega/Documents/Taxi%20Marketplace/modules/admin/actions/update-driver-status.ts:8:0-29:1) - Update driver status
+- [toggleFeatured(id, isFeatured)](cci:1://file:///Users/juanortega/Documents/Taxi%20Marketplace/modules/admin/actions/toggle-featured.ts:7:0-28:1) - Toggle featured flag
+- [getDriverCountByStatus()](cci:1://file:///Users/juanortega/Documents/Taxi%20Marketplace/modules/admin/repositories/admin.repository.ts:31:2-49:3) - Get status counts for filter tabs
+
+**AdminService** ([modules/admin/services/admin.service.ts](cci:7://file:///Users/juanortega/Documents/Taxi%20Marketplace/modules/admin/services/admin.service.ts:0:0-0:0)):
+- [getAllDrivers(status?)](cci:1://file:///Users/juanortega/Documents/Taxi%20Marketplace/modules/admin/services/admin.service.ts:4:2-6:3) - Delegates to repository
+- [getDriverById(id)](cci:1://file:///Users/juanortega/Documents/Taxi%20Marketplace/modules/admin/services/admin.service.ts:8:2-10:3) - Delegates to repository
+- [updateDriverStatus(id, status)](cci:1://file:///Users/juanortega/Documents/Taxi%20Marketplace/modules/admin/actions/update-driver-status.ts:8:0-29:1) - Delegates to repository
+- [toggleFeatured(id, isFeatured)](cci:1://file:///Users/juanortega/Documents/Taxi%20Marketplace/modules/admin/actions/toggle-featured.ts:7:0-28:1) - Delegates to repository
+- [getStatusCounts()](cci:1://file:///Users/juanortega/Documents/Taxi%20Marketplace/modules/admin/services/admin.service.ts:20:2-22:3) - Delegates to repository
 
 ---
 
@@ -105,8 +133,8 @@ export async function generateMetadata({ params }: DriverProfilePageProps): Prom
 **Build:** ✅ Passing
 ```
 Route (app)                              Size     First Load JS
-├ ƒ /drivers                             182 B           114 kB
-├ ƒ /drivers/[slug]                      1.17 kB         127 kB
+├ ƒ /admin/drivers                       1.15 kB         122 kB
+├ ƒ /admin/drivers/[id]                  1.95 kB         128 kB
 ```
 
 **Lint:** ✅ Passing (no errors)
@@ -120,18 +148,34 @@ Route (app)                              Size     First Load JS
 ### Warnings
 **None** - All functionality working as specified.
 
-### Notes
-- **Lead tracking not implemented** - That's Phase 6
-- **Profile view tracking not implemented** - That's Phase 6
-- **No pagination** - Not needed for MVP (reasonable driver count expected)
-- **City filter is simple** - Works well for current needs
-- **Featured driver flag exists** but admin tool to set it is Phase 4
-
 ### Open Questions
-**None** - Phase 3 scope fully implemented as specified.
+**None** - Phase 4 scope fully implemented.
+
+### Notes
+
+**Implemented:**
+- Clean, scannable admin UI
+- Efficient status filtering
+- Role-based security on all routes/actions
+- Immediate revalidation on status changes
+- Featured flag ready for future use
+
+**Not Implemented (Future Phases):**
+- Email notifications on status changes
+- Rejection/suspension reason tracking
+- Bulk driver actions
+- Driver activity audit log
+- Featured driver public sorting
+- Advanced search/filters
+
+**Business Rules Verified:**
+- Only APPROVED drivers appear in `/drivers`
+- Status changes reflect immediately across all views
+- Admin role required for all admin operations
+- Non-admin users redirected to dashboard
 
 ---
 
-**Phase 3 Status:** ✅ Complete and verified  
+**Phase 4 Status:** ✅ Complete and verified  
 **Ready for approval:** Yes  
-**Phase 4:** Awaiting your approval before proceeding
+**Phase 5:** Awaiting your approval before proceeding

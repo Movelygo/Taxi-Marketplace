@@ -1,7 +1,7 @@
 # Movely - System Architecture
 
-**Last Updated:** 2026-04-02  
-**Phase:** 3 - Public Directory Complete  
+**Last Updated:** 2026-04-06  
+**Phase:** 5 - Lead Tracking & Metrics Complete  
 
 ## Overview
 
@@ -407,6 +407,225 @@ OR
 - CTA buttons use utility functions from `lib/utils/phone.ts`
 - Dynamic metadata for social sharing
 - 404 page for unapproved/non-existent drivers
+
+## Admin Driver Review Flow
+
+**Use Case:** Admin reviews and manages driver profiles
+
+```
+┌──────────────┐
+│  Admin User  │
+└──────┬───────┘
+       │
+       ▼
+┌─────────────────────────────────────────┐
+│ GET /admin/drivers?status=PENDING       │
+│ (Admin Driver List Page)                 │
+└──────┬──────────────────────────────────┘
+       │
+       ▼
+┌─────────────────────────────────────────┐
+│ AdminService.getAllDrivers(status)       │
+└──────┬──────────────────────────────────┘
+       │
+       ▼
+┌─────────────────────────────────────────┐
+│ AdminRepository.findAllDrivers(status)   │
+│ - Prisma query with status filter        │
+│ - Orders by createdAt DESC               │
+└──────┬──────────────────────────────────┘
+       │
+       ▼
+┌─────────────────────────────────────────┐
+│ Render driver list with:                 │
+│ - Display name, city, vehicle            │
+│ - Status badge (color-coded)             │
+│ - Created date                           │
+│ - Featured indicator (★)                 │
+│ - Status filter tabs with counts         │
+└──────┬──────────────────────────────────┘
+       │
+       │ Click "Review" button
+       ▼
+┌─────────────────────────────────────────┐
+│ GET /admin/drivers/[id]                  │
+│ (Admin Driver Detail Page)               │
+└──────┬──────────────────────────────────┘
+       │
+       ▼
+┌─────────────────────────────────────────┐
+│ AdminService.getDriverById(id)           │
+└──────┬──────────────────────────────────┘
+       │
+       ▼
+┌─────────────────────────────────────────┐
+│ Display full driver profile:             │
+│ - All contact info and details           │
+│ - Profile image if available             │
+│ - Status management controls             │
+│ - Featured toggle                        │
+│ - Link to public profile (if APPROVED)   │
+└──────┬──────────────────────────────────┘
+       │
+       │ Admin clicks "Approve"
+       ▼
+┌─────────────────────────────────────────┐
+│ updateDriverStatus(driverId, 'APPROVED') │
+│ (Server Action)                          │
+└──────┬──────────────────────────────────┘
+       │
+       ▼
+┌─────────────────────────────────────────┐
+│ Check user is ADMIN                      │
+└──────┬──────────────────────────────────┘
+       │
+       ▼
+┌─────────────────────────────────────────┐
+│ AdminService.updateDriverStatus()        │
+└──────┬──────────────────────────────────┘
+       │
+       ▼
+┌─────────────────────────────────────────┐
+│ AdminRepository.updateDriverStatus()     │
+│ - Prisma update with new status          │
+└──────┬──────────────────────────────────┘
+       │
+       ▼
+┌─────────────────────────────────────────┐
+│ Revalidate paths:                        │
+│ - /admin/drivers                         │
+│ - /admin/drivers/[id]                    │
+│ - /drivers (public directory)            │
+└──────┬──────────────────────────────────┘
+       │
+       ▼
+┌─────────────────────────────────────────┐
+│ Driver now appears in public directory   │
+│ (only APPROVED drivers visible)          │
+└─────────────────────────────────────────┘
+```
+
+**Status Management:**
+- **PENDING** → Initial status for new driver profiles
+- **APPROVED** → Driver appears publicly in `/drivers`
+- **REJECTED** → Driver does not appear publicly
+- **SUSPENDED** → Previously approved driver removed from public view
+
+**Featured Toggle:**
+- Admin can mark/unmark drivers as featured
+- Featured drivers can be prioritized in future phases
+
+---
+
+## Lead Tracking Flow
+
+**Use Case:** Track customer contact attempts (WhatsApp/Call)
+
+```
+┌──────────────┐
+│ Public User  │
+└──────┬───────┘
+       │
+       │ Visits /drivers/john-smith
+       ▼
+┌─────────────────────────────────────────┐
+│ Driver Profile Page Loads                │
+│ - TrackProfileView component mounts      │
+│ - Calls trackProfileView(driverId)      │
+└──────┬──────────────────────────────────┘
+       │
+       ▼
+┌─────────────────────────────────────────┐
+│ ProfileViewService.trackView()           │
+│ - Hash IP address                        │
+│ - Check deduplication (30-min window)   │
+│ - If not duplicate: create ProfileView  │
+│ - Increment driver.viewCount             │
+└──────┬──────────────────────────────────┘
+       │
+       │ User clicks WhatsApp button
+       ▼
+┌─────────────────────────────────────────┐
+│ LeadTrackingButtons component            │
+│ - Calls trackLead(driverId, 'WHATSAPP') │
+│ - Opens WhatsApp in new tab              │
+└──────┬──────────────────────────────────┘
+       │
+       ▼
+┌─────────────────────────────────────────┐
+│ LeadService.trackLead()                  │
+│ - Hash IP address                        │
+│ - Extract user agent, referrer           │
+│ - Create Lead record                     │
+└──────┬──────────────────────────────────┘
+       │
+       ▼
+┌─────────────────────────────────────────┐
+│ Lead stored in database with:            │
+│ - driverId                               │
+│ - source (WHATSAPP/CALL)                 │
+│ - ipHash (SHA-256)                       │
+│ - userAgent                              │
+│ - referrer                               │
+│ - createdAt                              │
+└─────────────────────────────────────────┘
+```
+
+**Profile View Deduplication:**
+- 30-minute window per IP + driver combination
+- Prevents view count inflation
+- Increments `driver.viewCount` only on unique views
+
+**Lead Tracking:**
+- No deduplication (all clicks tracked)
+- Separate records for WhatsApp vs Call
+- Used for driver metrics and future analytics
+
+---
+
+## Driver Metrics Flow
+
+**Use Case:** Driver views their performance metrics
+
+```
+┌──────────────┐
+│    Driver    │
+└──────┬───────┘
+       │
+       │ Visits /dashboard
+       ▼
+┌─────────────────────────────────────────┐
+│ Dashboard Page                           │
+│ - Fetches profile                        │
+│ - Calls DriverMetricsService.getMetrics()│
+└──────┬──────────────────────────────────┘
+       │
+       ▼
+┌─────────────────────────────────────────┐
+│ DriverMetricsService.getMetrics()        │
+│ - ProfileViewService.getViewCountByDriver│
+│ - LeadService.getLeadCountByDriver       │
+│ - LeadService.getLeadCountBySource       │
+│   (WHATSAPP and CALL)                    │
+└──────┬──────────────────────────────────┘
+       │
+       ▼
+┌─────────────────────────────────────────┐
+│ Display metrics cards:                   │
+│ - Profile Views (total unique views)    │
+│ - Total Leads (WhatsApp + Call)         │
+│ - WhatsApp Leads (green)                 │
+│ - Call Leads (blue)                      │
+└─────────────────────────────────────────┘
+```
+
+**Metrics Calculated:**
+- Profile Views: Count from `profile_views` table
+- Total Leads: Count from `leads` table
+- WhatsApp Leads: Filtered by `source = 'WHATSAPP'`
+- Call Leads: Filtered by `source = 'CALL'`
+
+---
 
 ## File Upload Flow
 

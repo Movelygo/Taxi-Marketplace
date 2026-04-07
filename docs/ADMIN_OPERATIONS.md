@@ -1,7 +1,7 @@
 # TaxiLink - Admin Operations Guide
 
-**Last Updated:** 2026-03-29  
-**Phase:** 0 - Placeholder Created  
+**Last Updated:** 2026-04-06  
+**Phase:** 4 - Admin Driver Review Implemented  
 
 ## Overview
 
@@ -47,30 +47,37 @@ UPDATE users SET role = 'ADMIN' WHERE id = 'user-uuid-here';
 
 ### Reviewing Pending Drivers
 
-**Status:** To be implemented in Phase 8
+**Status:** ✅ Implemented in Phase 4
 
 **Process:**
 1. Login to admin panel
-2. Navigate to `/admin/drivers?status=pending`
-3. See list of pending drivers with:
-   - Name
+2. Navigate to `/admin/drivers` or click "Driver Management" from admin dashboard
+3. Click "PENDING" tab to filter pending drivers
+4. See list shows:
+   - Display name (with ★ if featured)
    - City
    - Vehicle type
-   - Registration date
-4. Click driver to view full profile
+   - Status badge (color-coded)
+   - Created date
+5. Click "Review" button to view full profile
 
 ### Approving a Driver
 
-**Status:** To be implemented in Phase 8
+**Status:** ✅ Implemented in Phase 4
 
 **Steps:**
-1. Review driver profile completely
-2. Verify information is accurate
-3. Check profile image is appropriate
-4. Click "Approve" button
-5. Driver status changes to `APPROVED`
-6. Driver immediately visible on public directory
-7. (Optional) Send approval email notification
+1. Navigate to driver detail page (`/admin/drivers/[id]`)
+2. Review complete profile:
+   - Contact information
+   - Service area
+   - Vehicle details
+   - Languages
+   - Bio
+   - Profile image
+3. Click "Approve" button in Actions sidebar
+4. Success message appears: "✓ Driver status updated to APPROVED"
+5. Driver immediately visible on public directory at `/drivers`
+6. "View Public Profile" link becomes available
 
 **SQL Fallback:**
 ```sql
@@ -81,16 +88,18 @@ WHERE id = 'driver-uuid-here';
 
 ### Rejecting a Driver
 
-**Status:** To be implemented in Phase 8
+**Status:** ✅ Implemented in Phase 4
 
 **Steps:**
-1. Review driver profile
-2. Determine rejection reason
-3. Click "Reject" button
-4. (Optional) Add rejection note
+1. Navigate to driver detail page
+2. Review driver profile
+3. Click "Reject" button in Actions sidebar
+4. Success message appears: "✓ Driver status updated to REJECTED"
 5. Driver status changes to `REJECTED`
-6. Driver remains hidden from directory
-7. (Optional) Send rejection email with reason
+6. Driver remains hidden from public directory
+7. Driver can still access dashboard but profile not public
+
+**Note:** Email notifications to be added in future phase
 
 **Common Rejection Reasons:**
 - Incomplete information
@@ -101,7 +110,7 @@ WHERE id = 'driver-uuid-here';
 
 ### Suspending a Driver
 
-**Status:** To be implemented in Phase 8
+**Status:** ✅ Implemented in Phase 4
 
 **When to Suspend:**
 - Customer complaints
@@ -110,31 +119,31 @@ WHERE id = 'driver-uuid-here';
 - Temporary investigation needed
 
 **Steps:**
-1. Navigate to driver profile
-2. Click "Suspend" button
-3. Add suspension reason
+1. Navigate to driver detail page (`/admin/drivers/[id]`)
+2. Click "Suspend" button in Actions sidebar
+3. Success message appears: "✓ Driver status updated to SUSPENDED"
 4. Driver status changes to `SUSPENDED`
-5. Driver hidden from public directory
-6. Driver can still login but profile not visible
+5. Driver immediately hidden from public directory
+6. Driver can still login to dashboard but profile not public
 
-**To Unsuspend:**
-```sql
-UPDATE drivers 
-SET status = 'APPROVED', updated_at = NOW() 
-WHERE id = 'driver-uuid-here';
-```
+**To Restore:**
+1. Navigate to driver detail page
+2. Click "Approve" button to restore to APPROVED status
+3. Or click "Set to Pending" to return to review queue
 
 ### Featuring a Driver
 
-**Status:** To be implemented in Phase 8
+**Status:** ✅ Implemented in Phase 4
 
-**Purpose:** Promote quality drivers to top of listings
+**Purpose:** Mark quality drivers (not yet used in public sorting)
 
 **Steps:**
-1. Navigate to driver profile in admin panel
-2. Click "Feature Driver" toggle
-3. Driver appears first in directory listings
-4. Review featured drivers periodically
+1. Navigate to driver detail page (`/admin/drivers/[id]`)
+2. Click "☆ Mark as Featured" button
+3. Success message appears: "✓ Featured status enabled"
+4. Button changes to "★ Remove Featured"
+5. Driver list shows ★ indicator next to name
+6. Featured flag ready for future directory sorting
 
 **Manual SQL:**
 ```sql
