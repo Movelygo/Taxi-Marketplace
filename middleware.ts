@@ -2,6 +2,24 @@ import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 
 export async function middleware(request: NextRequest) {
+  // Coming Soon gate — when NEXT_PUBLIC_SITE_STATUS=coming_soon (set only in
+  // the Vercel Production environment), the public site shows a standalone
+  // Coming Soon page. The real app stays fully accessible on the
+  // staging/preview environment where this env var is unset.
+  if (process.env.NEXT_PUBLIC_SITE_STATUS === 'coming_soon') {
+    const { pathname } = request.nextUrl
+    // Keep the auth callback functional so Supabase email links never break
+    if (pathname === '/auth/callback' || pathname.startsWith('/auth/')) {
+      // fall through to the normal session-refresh logic below
+    } else if (pathname === '/') {
+      return NextResponse.rewrite(new URL('/coming-soon', request.url))
+    } else if (pathname === '/coming-soon') {
+      return NextResponse.next()
+    } else {
+      return NextResponse.redirect(new URL('/', request.url))
+    }
+  }
+
   let supabaseResponse = NextResponse.next({
     request,
   })

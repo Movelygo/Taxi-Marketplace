@@ -133,6 +133,16 @@ enum InquiryStatus {
   ARCHIVED
 }
 
+// Email waitlist signups from the public Coming Soon page
+model WaitlistEntry {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@index([createdAt])
+  @@map("waitlist_entries")
+}
+
 // Basic ads system
 model Ad {
   id        String   @id @default(uuid())
