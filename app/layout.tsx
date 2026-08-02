@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Inter, Geist } from "next/font/google";
 import "./globals.css";
+import { Analytics } from "@vercel/analytics/next";
 import { PostHogProvider } from '@/providers/posthog-provider';
 import { cn } from "@/lib/utils";
 
@@ -28,6 +29,7 @@ export default function RootLayout({
         <PostHogProvider>
           {children}
         </PostHogProvider>
+        <Analytics />
       </body>
     </html>
   );
