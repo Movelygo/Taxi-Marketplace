@@ -1,5 +1,4 @@
 import { Resend } from 'resend'
-import * as Sentry from '@sentry/nextjs'
 
 const resend = new Resend(process.env.RESEND_API_KEY)
 
@@ -35,9 +34,6 @@ export async function sendEmail({
   })
 
   if (error) {
-    Sentry.captureException(new Error(`Resend error: ${error.message}`), {
-      extra: { to },
-    })
     throw new Error(`Resend error: ${error.message}`)
   }
 }

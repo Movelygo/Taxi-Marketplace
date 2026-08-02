@@ -5,7 +5,6 @@ import { redirect } from 'next/navigation'
 import { AdminService } from '../services/admin.service'
 import { DriverStatus } from '@prisma/client'
 import { revalidatePath } from 'next/cache'
-import * as Sentry from '@sentry/nextjs'
 import { sendEmail } from '@/lib/email/email-sender'
 import {
   buildDriverStatusNotificationHtml,
@@ -62,9 +61,6 @@ export async function updateDriverStatus(driverId: string, status: DriverStatus)
           }),
         })
       } catch (emailError) {
-        Sentry.captureException(emailError, {
-          extra: { driverId, status, context: 'driver-status-notification' },
-        })
         console.error('[updateDriverStatus] notification email failed:', emailError)
       }
     }
@@ -74,9 +70,6 @@ export async function updateDriverStatus(driverId: string, status: DriverStatus)
     revalidatePath('/drivers')
     return { success: true }
   } catch (error) {
-    Sentry.captureException(error, {
-      extra: { driverId, status, context: 'update-driver-status' },
-    })
     console.error('Update driver status error:', error)
     return { error: 'Failed to update driver status' }
   }

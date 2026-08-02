@@ -10,7 +10,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Fase A — Close Operational MVP + Admin Settings Foundation
 
-**Summary:** Implemented the first execution phase of `docs/ROADMAP_MILESTONES.md`. Built a runtime `SystemConfig` store so business constants (notification emails, photo limits, featured caps, sender identity) can be managed from `/admin/settings` without code changes. Wired in-app transactional email via Resend: admins are notified of new contact-form submissions, and drivers receive status-change emails when approved/rejected/suspended. Added a complete admin inbox for `/admin/inquiries` with status filters and transitions. Finalized public legal pages by removing draft banners and updating effective dates. Hardened Sentry error capture on server actions and PostHog event tracking on key admin interactions.
+**Summary:** Implemented the first execution phase of `docs/ROADMAP_MILESTONES.md`. Built a runtime `SystemConfig` store so business constants (notification emails, photo limits, featured caps, sender identity) can be managed from `/admin/settings` without code changes. Wired in-app transactional email via Resend: admins are notified of new contact-form submissions, and drivers receive status-change emails when approved/rejected/suspended. Added a complete admin inbox for `/admin/inquiries` with status filters and transitions. Finalized public legal pages by removing draft banners and updating effective dates. Added code hooks for Sentry/PostHog, but these remain dormant until DSN/API keys are added to the environment.
 
 ### Added
 
@@ -22,25 +22,23 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
   - `validations/system-config.schema.ts` — Zod schema for the settings form.
   - `actions/get-configs.ts` + `actions/update-configs.ts` — admin-gated server actions with typed `useActionState` support.
 - **`lib/email/`** — Resend-based email delivery:
-  - `email-sender.ts` — thin `sendEmail` wrapper that skips when `RESEND_API_KEY` is missing and captures failures in Sentry.
+  - `email-sender.ts` — thin `sendEmail` wrapper that skips when `RESEND_API_KEY` is missing and logs failures.
   - `templates/inquiry-admin-notification.ts` — HTML/text email for new contact submissions.
   - `templates/driver-status-notification.ts` — HTML/text email for driver approval/rejection/suspension.
 - **Admin Settings page** (`app/(admin)/admin/settings/page.tsx`) + `components/admin/settings-form.tsx` — edit all runtime configuration values, save with `useActionState`, field-level validation, success/error feedback.
 - **Admin Inquiries inbox** (`app/(admin)/admin/inquiries/page.tsx`) with status filter chips (`components/admin/inquiry-filters.tsx`) and status badge (`components/admin/inquiry-status-badge.tsx`).
-- **Admin Inquiry detail** (`app/(admin)/admin/inquiries/[id]/page.tsx`) + `components/admin/inquiry-status-actions.tsx` — view full message, contact details, and transition status (New / In Review / Resolved / Archived) with PostHog tracking.
+- **Admin Inquiry detail** (`app/(admin)/admin/inquiries/[id]/page.tsx`) + `components/admin/inquiry-status-actions.tsx` — view full message, contact details, and transition status (New / In Review / Resolved / Archived) with PostHog tracking hooks.
 - **`modules/contact/actions/update-inquiry-status.ts`** — admin-gated server action to transition inquiry status and revalidate the inbox.
-- **`instrumentation.ts`** — loads `sentry.server.config` on the Node runtime and `sentry.edge.config` on the Edge runtime.
-- **`instrumentation-client.ts`** — loads `sentry.client.config` in the browser.
+- **Sentry/PostHog hooks** — `driver_status_changed`, `driver_featured_toggled`, and `inquiry_submitted` events are wired in the UI. They only fire after the corresponding env vars are set.
 
 ### Changed
 
 - **`modules/contact/actions/submit-inquiry.ts`** — after persisting the inquiry, sends an admin notification email via Resend using the `SystemConfig` admin email and sender settings; email failures are logged but do not break the user-facing submission.
-- **`modules/admin/actions/update-driver-status.ts`** — sends a status-change email to the driver on APPROVED/REJECTED/SUSPENDED transitions, reads subject lines from `SystemConfig`, captures both persistence and notification errors in Sentry.
-- **`components/admin/driver-status-actions.tsx`** — wrapped calls in `try/catch`, added PostHog tracking for `driver_status_changed` and `driver_featured_toggled`, removed direct Sentry client import to keep the client bundle clean.
-- **`components/public/contact-form.tsx`** — added PostHog `inquiry_submitted` event on successful submission.
+- **`modules/admin/actions/update-driver-status.ts`** — sends a status-change email to the driver on APPROVED/REJECTED/SUSPENDED transitions, reads subject lines from `SystemConfig`, logs both persistence and notification errors.
+- **`components/admin/driver-status-actions.tsx`** — wrapped calls in `try/catch`, added PostHog tracking hooks for `driver_status_changed` and `driver_featured_toggled` (active once PostHog key is set).
+- **`components/public/contact-form.tsx`** — added PostHog `inquiry_submitted` tracking hook on successful submission (active once PostHog key is set).
 - **`components/admin/admin-sidebar.tsx`** — enabled **Inquiries** and **Settings** navigation items.
 - **`prisma/seed.ts`** — now seeds default `SystemConfig` values on fresh databases.
-- **`next.config.js`** — added webpack `ignoreWarnings` to suppress harmless OpenTelemetry critical-dependency warnings coming from Sentry's server SDK.
 - **Public legal pages** (`privacy`, `terms`, `driver-guidelines`) — removed `draft` banners, updated `LAST_UPDATED` to 2026-08-02.
 
 ### Verified
@@ -49,7 +47,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - `npm run db:seed` — default config values inserted.
 - `npx tsc --noEmit` — clean.
 - `npm run lint` — clean.
-- `npm run build` — successful production build; 19 dynamic/static routes including new admin pages.
+- `npm run build` — successful production build; no Sentry bundle warnings.
 
 ---
 
