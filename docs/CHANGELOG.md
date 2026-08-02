@@ -6,6 +6,18 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ---
 
+## [Roadmap v2] - 2026-08-02
+
+### Full Audit & Milestone Replan
+
+**Summary:** Docs-only update. Completed the production infrastructure sequence started in Phase 11 (movelygo.com live with Coming Soon, staging.movelygo.com live with the full app, Resend SMTP verified end-to-end, automated staging smoke test passed). Then performed a full codebase audit, compared it against the original vision document ("Plan inicial de Implementación y Servicios") and the previous milestone list (handoff M1–M10 / F1–F16), researched directory-profile UX best practices, and produced a replanned roadmap.
+
+### Added
+
+- **`docs/ROADMAP_MILESTONES.md`** — supersedes handoff §6/§7. Nine phases (A–I) from closing the operational MVP (in-app emails, inquiries inbox, legal) through structured data foundation (DB cities, driver attributes, photo galleries), search/filters/pagination, profile redesign, reviews + reports, customer accounts + favorites, full admin tooling, SEO + launch, and post-launch monetization (freemium tiers, paid featured placement). Includes vision deltas (what changed vs. the original plan), audit gap analysis, and UX research summary.
+
+---
+
 ## [Phase 11] - 2026-08-01
 
 ### Coming Soon Page & Production Deployment Prep
