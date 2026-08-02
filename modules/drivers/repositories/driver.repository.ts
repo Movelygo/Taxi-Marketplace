@@ -85,8 +85,27 @@ export class DriverRepository {
       },
       orderBy: [
         { isFeatured: 'desc' },
+        { featuredOrder: 'asc' },
         { createdAt: 'desc' },
       ],
+    })
+  }
+
+  /**
+   * Returns drivers admin has flagged as featured for the homepage,
+   * ordered by featuredOrder (lower = earlier).
+   */
+  static async findFeaturedApproved(limit: number = 6): Promise<Driver[]> {
+    return await prisma.driver.findMany({
+      where: {
+        status: 'APPROVED',
+        isFeatured: true,
+      },
+      orderBy: [
+        { featuredOrder: 'asc' },
+        { createdAt: 'desc' },
+      ],
+      take: limit,
     })
   }
 

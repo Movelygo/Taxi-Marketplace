@@ -36,6 +36,8 @@ export async function login(_prevState: LoginState, formData: FormData): Promise
     return { error: error.message }
   }
   
-  const redirectTo = formData.get('redirectTo') as string | null
+  const rawRedirect = formData.get('redirectTo') as string | null
+  // Only allow relative paths to prevent open redirect attacks
+  const redirectTo = rawRedirect?.startsWith('/') ? rawRedirect : null
   redirect(redirectTo || '/dashboard')
 }

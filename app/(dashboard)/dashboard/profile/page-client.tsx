@@ -14,19 +14,25 @@ export function ProfileClient({ profile }: ProfileClientProps) {
   const [uploadBusy, setUploadBusy] = useState(false)
 
   return (
-    <div className="space-y-8">
-      <ProfileForm 
-        profile={profile} 
-        externalBusy={uploadBusy}
-        onFormStateChange={setFormBusy}
-      />
-      
-      {profile && (
-        <ProfileImageUpload 
-          currentImageUrl={profile.profileImageUrl}
-          externalBusy={formBusy}
-          onUploadStateChange={setUploadBusy}
+    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      {/* Main Form - Takes 2 columns on large screens */}
+      <div className="lg:col-span-2">
+        <ProfileForm 
+          profile={profile} 
+          externalBusy={uploadBusy}
+          onFormStateChange={setFormBusy}
         />
+      </div>
+      
+      {/* Image Upload Sidebar - Takes 1 column on large screens */}
+      {profile && (
+        <div className="lg:col-span-1">
+          <ProfileImageUpload 
+            currentImageUrl={profile.profileImageUrl}
+            externalBusy={formBusy}
+            onUploadStateChange={setUploadBusy}
+          />
+        </div>
       )}
     </div>
   )

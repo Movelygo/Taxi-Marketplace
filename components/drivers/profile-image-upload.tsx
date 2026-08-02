@@ -2,8 +2,6 @@
 
 import { useState, useRef } from 'react'
 import { uploadProfileImage } from '@/modules/drivers/actions/upload-profile-image'
-import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import Image from 'next/image'
 
 interface ProfileImageUploadProps {
@@ -93,18 +91,18 @@ export function ProfileImageUpload({ currentImageUrl, externalBusy = false, onUp
   }
 
   return (
-    <Card className="w-full max-w-md">
-      <CardHeader>
-        <CardTitle>Profile Image</CardTitle>
-        <CardDescription>Upload your profile picture (max 5MB)</CardDescription>
-      </CardHeader>
-      <CardContent>
-        <form onSubmit={handleUpload} className="space-y-4">
+    <div className="bg-white rounded-2xl border border-gray-200 shadow-sm">
+      <div className="p-6 border-b border-gray-200">
+        <h2 className="text-xl font-bold text-gray-900">Profile Image</h2>
+        <p className="text-sm text-gray-600 mt-1">Upload your profile picture (JPG, PNG, or WebP - max 5MB)</p>
+      </div>
+      <div className="p-6">
+        <form onSubmit={handleUpload} className="space-y-6">
           {savedImageUrl && (
-            <div className="space-y-2">
-              <p className="text-sm font-medium text-gray-700">Current Profile Image</p>
+            <div className="space-y-3">
+              <p className="text-sm font-semibold text-gray-900">Current Profile Image</p>
               <div className="flex justify-center">
-                <div className="relative w-32 h-32 rounded-full overflow-hidden border-2 border-gray-200">
+                <div className="relative w-40 h-40 rounded-full overflow-hidden border-4 border-gray-200 shadow-md">
                   <Image
                     src={savedImageUrl}
                     alt="Current profile image"
@@ -117,10 +115,10 @@ export function ProfileImageUpload({ currentImageUrl, externalBusy = false, onUp
           )}
 
           {previewUrl && (
-            <div className="space-y-2">
-              <p className="text-sm font-medium text-blue-600">Selected Image Preview</p>
+            <div className="space-y-3">
+              <p className="text-sm font-semibold text-blue-600">New Image Preview</p>
               <div className="flex justify-center">
-                <div className="relative w-32 h-32 rounded-full overflow-hidden border-2 border-blue-400">
+                <div className="relative w-40 h-40 rounded-full overflow-hidden border-4 border-blue-500 shadow-md">
                   <Image
                     src={previewUrl}
                     alt="Selected image preview"
@@ -133,35 +131,48 @@ export function ProfileImageUpload({ currentImageUrl, externalBusy = false, onUp
           )}
 
           <div className="space-y-2">
+            <label className="block text-sm font-semibold text-gray-900 mb-2">
+              Select New Image
+            </label>
             <input
               ref={fileInputRef}
               type="file"
               name="profileImage"
               accept="image/jpeg,image/jpg,image/png,image/webp"
               onChange={handleFileChange}
-              className="w-full text-sm"
+              className="block w-full text-sm text-gray-600 file:mr-4 file:py-2.5 file:px-4 file:rounded-lg file:border file:border-gray-300 file:text-sm file:font-semibold file:bg-white file:text-gray-700 hover:file:bg-gray-50 file:cursor-pointer cursor-pointer"
               disabled={uploading || externalBusy}
               required
             />
           </div>
 
           {success && (
-            <p className="text-sm text-green-600 font-medium">✓ Profile image uploaded successfully!</p>
+            <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
+              <p className="text-sm text-green-800 font-medium">✓ Profile image uploaded successfully!</p>
+            </div>
           )}
 
           {error && (
-            <p className="text-sm text-red-500">{error}</p>
+            <div className="p-4 bg-red-50 border border-red-200 rounded-lg">
+              <p className="text-sm text-red-800">{error}</p>
+            </div>
           )}
 
           {externalBusy && !uploading && (
-            <p className="text-sm text-gray-600">Profile save in progress...</p>
+            <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
+              <p className="text-sm text-blue-800">Profile save in progress...</p>
+            </div>
           )}
 
-          <Button type="submit" className="w-full" disabled={uploading || externalBusy}>
+          <button 
+            type="submit" 
+            className="w-full px-6 py-3 bg-[#0B1F3D] text-white rounded-lg font-semibold hover:bg-[#001F3F] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            disabled={uploading || externalBusy}
+          >
             {uploading ? 'Uploading...' : externalBusy ? 'Please wait...' : 'Upload Image'}
-          </Button>
+          </button>
         </form>
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   )
 }

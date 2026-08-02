@@ -29,6 +29,30 @@ export class AdminRepository {
     })
   }
 
+  static async updateFeaturedOrder(id: string, featuredOrder: number): Promise<Driver> {
+    return prisma.driver.update({
+      where: { id },
+      data: { featuredOrder },
+    })
+  }
+
+  /**
+   * Returns all currently featured (and approved) drivers in their
+   * admin-defined display order. Used by the admin Featured page.
+   */
+  static async findFeaturedOrdered(): Promise<Driver[]> {
+    return prisma.driver.findMany({
+      where: {
+        isFeatured: true,
+        status: 'APPROVED',
+      },
+      orderBy: [
+        { featuredOrder: 'asc' },
+        { createdAt: 'desc' },
+      ],
+    })
+  }
+
   static async getDriverCountByStatus(): Promise<Record<DriverStatus, number>> {
     const counts = await prisma.driver.groupBy({
       by: ['status'],
@@ -47,5 +71,12 @@ export class AdminRepository {
     })
 
     return result as Record<DriverStatus, number>
+  }
+
+  static async findRecentDrivers(limit: number = 5): Promise<Driver[]> {
+    return prisma.driver.findMany({
+      orderBy: { createdAt: 'desc' },
+      take: limit,
+    })
   }
 }

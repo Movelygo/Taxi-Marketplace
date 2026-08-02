@@ -58,6 +58,10 @@ export class DriverService {
     return await DriverRepository.findAllApproved(city)
   }
 
+  static async getFeaturedDrivers(limit: number = 6): Promise<Driver[]> {
+    return await DriverRepository.findFeaturedApproved(limit)
+  }
+
   static async getAvailableCities(): Promise<string[]> {
     return await DriverRepository.getUniqueCities()
   }

@@ -3,89 +3,118 @@
 import { useActionState } from 'react'
 import { useFormStatus } from 'react-dom'
 import { register } from '@/modules/auth/actions/register'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import Link from 'next/link'
+import { AuthCard } from './auth-card'
 
 function SubmitButton() {
   const { pending } = useFormStatus()
-  
   return (
-    <Button type="submit" className="w-full" disabled={pending}>
+    <button
+      type="submit"
+      className="w-full bg-[#0B1F3D] text-white py-3 px-4 rounded-lg font-semibold hover:bg-[#001F3F] transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm"
+      disabled={pending}
+    >
       {pending ? 'Creating account...' : 'Create account'}
-    </Button>
+    </button>
   )
 }
 
 export function RegisterForm() {
   const [state, formAction] = useActionState(register, undefined)
-  
+
   return (
-    <Card className="w-full max-w-md">
-      <CardHeader>
-        <CardTitle>Create an account</CardTitle>
-        <CardDescription>Enter your email to get started</CardDescription>
-      </CardHeader>
-      <CardContent>
-        <form action={formAction} className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="email">Email</Label>
-            <Input
-              id="email"
-              name="email"
-              type="email"
-              placeholder="you@example.com"
-              required
-            />
-            {state?.error && typeof state.error === 'object' && 'email' in state.error && (
-              <p className="text-sm text-red-500">{state.error.email?.[0]}</p>
-            )}
-          </div>
-          
-          <div className="space-y-2">
-            <Label htmlFor="password">Password</Label>
-            <Input
-              id="password"
-              name="password"
-              type="password"
-              placeholder="••••••••"
-              required
-            />
-            {state?.error && typeof state.error === 'object' && 'password' in state.error && (
-              <p className="text-sm text-red-500">{state.error.password?.[0]}</p>
-            )}
-          </div>
-          
-          <div className="space-y-2">
-            <Label htmlFor="confirmPassword">Confirm Password</Label>
-            <Input
-              id="confirmPassword"
-              name="confirmPassword"
-              type="password"
-              placeholder="••••••••"
-              required
-            />
-            {state?.error && typeof state.error === 'object' && 'confirmPassword' in state.error && (
-              <p className="text-sm text-red-500">{state.error.confirmPassword?.[0]}</p>
-            )}
-          </div>
-          
-          {typeof state?.error === 'string' && (
-            <p className="text-sm text-red-500">{state.error}</p>
+    <AuthCard
+      eyebrow="Driver onboarding"
+      title="Join as a driver"
+      subtitle="List your services on Movely and connect with customers — no fees, no commissions."
+      footer={
+        <>
+          Already have an account?{' '}
+          <Link href="/login" className="font-semibold text-[#0B1F3D] hover:underline">
+            Sign in
+          </Link>
+        </>
+      }
+    >
+      <form action={formAction} className="space-y-4">
+        <div className="space-y-1.5">
+          <label htmlFor="email" className="block text-sm font-semibold text-gray-700">
+            Email address
+          </label>
+          <input
+            id="email"
+            name="email"
+            type="email"
+            placeholder="you@example.com"
+            autoComplete="email"
+            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#0B1F3D] focus:border-transparent outline-none text-sm"
+            required
+          />
+          {state?.error && typeof state.error === 'object' && 'email' in state.error && (
+            <p className="text-xs text-red-600">{state.error.email?.[0]}</p>
           )}
-          
-          <SubmitButton />
-          
-          <p className="text-center text-sm text-muted-foreground">
-            Already have an account?{' '}
-            <Link href="/login" className="text-primary hover:underline">
-              Sign in
-            </Link>
-          </p>
-        </form>
-      </CardContent>
-    </Card>
+        </div>
+
+        <div className="space-y-1.5">
+          <label htmlFor="password" className="block text-sm font-semibold text-gray-700">
+            Password
+          </label>
+          <input
+            id="password"
+            name="password"
+            type="password"
+            placeholder="••••••••"
+            autoComplete="new-password"
+            minLength={8}
+            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#0B1F3D] focus:border-transparent outline-none text-sm"
+            required
+          />
+          {state?.error && typeof state.error === 'object' && 'password' in state.error ? (
+            <p className="text-xs text-red-600">{state.error.password?.[0]}</p>
+          ) : (
+            <p className="text-xs text-gray-500">Minimum 8 characters.</p>
+          )}
+        </div>
+
+        <div className="space-y-1.5">
+          <label htmlFor="confirmPassword" className="block text-sm font-semibold text-gray-700">
+            Confirm password
+          </label>
+          <input
+            id="confirmPassword"
+            name="confirmPassword"
+            type="password"
+            placeholder="••••••••"
+            autoComplete="new-password"
+            minLength={8}
+            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#0B1F3D] focus:border-transparent outline-none text-sm"
+            required
+          />
+          {state?.error && typeof state.error === 'object' && 'confirmPassword' in state.error && (
+            <p className="text-xs text-red-600">{state.error.confirmPassword?.[0]}</p>
+          )}
+        </div>
+
+        {typeof state?.error === 'string' && (
+          <div className="bg-red-50 border border-red-200 rounded-lg p-3">
+            <p className="text-sm text-red-700">{state.error}</p>
+          </div>
+        )}
+
+        <SubmitButton />
+
+        <p className="text-xs text-gray-500 text-center pt-1">
+          By creating an account you agree to the{' '}
+          <Link href="/terms" className="font-semibold text-[#0B1F3D] hover:underline">
+            Terms
+          </Link>{' '}
+          and{' '}
+          <Link href="/privacy" className="font-semibold text-[#0B1F3D] hover:underline">
+            Privacy Policy
+          </Link>
+          .
+        </p>
+      </form>
+    </AuthCard>
   )
 }

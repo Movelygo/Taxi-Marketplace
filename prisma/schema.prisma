@@ -47,6 +47,7 @@ model Driver {
   status             DriverStatus       @default(PENDING)
   availabilityStatus AvailabilityStatus @default(AVAILABLE) @map("availability_status")
   isFeatured         Boolean            @default(false) @map("is_featured")
+  featuredOrder      Int                @default(0) @map("featured_order")
   viewCount          Int                @default(0) @map("view_count")
   createdAt          DateTime           @default(now()) @map("created_at")
   updatedAt          DateTime           @updatedAt @map("updated_at")
@@ -108,6 +109,28 @@ model Lead {
 enum LeadSource {
   WHATSAPP
   CALL
+}
+
+// Contact / support inquiries from the public site
+model Inquiry {
+  id        String        @id @default(uuid())
+  name      String
+  email     String
+  subject   String
+  message   String        @db.Text
+  status    InquiryStatus @default(NEW)
+  createdAt DateTime      @default(now()) @map("created_at")
+  updatedAt DateTime      @updatedAt @map("updated_at")
+
+  @@index([status, createdAt])
+  @@map("inquiries")
+}
+
+enum InquiryStatus {
+  NEW
+  IN_REVIEW
+  RESOLVED
+  ARCHIVED
 }
 
 // Basic ads system

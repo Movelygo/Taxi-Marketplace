@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { prisma } from '@/lib/db/prisma'
 import { redirect } from 'next/navigation'
+import { AdminSidebar } from '@/components/admin/admin-sidebar'
 
 export default async function AdminLayout({
   children,
@@ -16,7 +17,7 @@ export default async function AdminLayout({
 
   const dbUser = await prisma.user.findUnique({
     where: { id: user.id },
-    select: { role: true }
+    select: { role: true, email: true }
   })
 
   if (!dbUser || dbUser.role !== 'ADMIN') {
@@ -24,13 +25,12 @@ export default async function AdminLayout({
   }
 
   return (
-    <div className="min-h-screen">
-      <header className="border-b">
-        <div className="container mx-auto px-4 py-4">
-          <h1 className="text-2xl font-bold">Admin Panel</h1>
-        </div>
-      </header>
-      <main className="container mx-auto px-4 py-8">
+    <div className="flex min-h-screen bg-gray-50">
+      {/* Sidebar */}
+      <AdminSidebar userEmail={dbUser.email} />
+      
+      {/* Main Content */}
+      <main className="flex-1 overflow-auto">
         {children}
       </main>
     </div>

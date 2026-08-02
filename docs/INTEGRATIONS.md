@@ -1,7 +1,7 @@
 # Movely - Third-Party Integrations
 
-**Last Updated:** 2026-04-01  
-**Phase:** 1 - Authentication Complete  
+**Last Updated:** 2026-05-17  
+**Phase:** 8 - Auth Recovery Audit Complete  
 
 ## Overview
 
@@ -97,25 +97,43 @@ CREATE TRIGGER on_auth_user_created
 - No parallel ID systems
 - Automatic sync when user registers
 
-### Phase 1 Implementation (Complete)
+### Auth Implementation (Phases 1 + 8 — Complete)
 
-**Auth Flow:**
+**Full Auth Flow:**
 - Email/password registration via Server Actions
 - Email confirmation flow with callback handler
+- Password recovery flow (forgot password → reset email → set new password)
 - Session-based authentication with HTTP-only cookies
 - Middleware protection for protected routes
+- Open redirect protection on login (only relative paths allowed)
 
 **Server Actions:**
-- `modules/auth/actions/register.ts` - Handles user registration
-- `modules/auth/actions/login.ts` - Handles user login
-- `modules/auth/actions/logout.ts` - Handles logout
-- `modules/auth/actions/get-current-user.ts` - Fetches current user with role
+- `modules/auth/actions/register.ts` - User registration
+- `modules/auth/actions/login.ts` - Login with open redirect protection
+- `modules/auth/actions/logout.ts` - Logout
+- `modules/auth/actions/get-current-user.ts` - Fetch current user + role
+- `modules/auth/actions/forgot-password.ts` - Send password reset email
+- `modules/auth/actions/update-password.ts` - Set new password (min 8 chars)
+
+**Auth Pages:**
+- `/login` — Sign in form with forgot password link
+- `/register` — Registration form
+- `/check-email` — Post-registration email confirmation notice
+- `/forgot-password` — Email entry to request reset link
+- `/reset-password` — New password form (accessed via email link)
+
+**Auth Callback (`/auth/callback`):**
+- Handles PKCE flow (`code` param) — used by password reset emails
+- Handles OTP flow (`token_hash` + `type` params) — used by magic links / email confirmation
+- Reads `next` param for custom post-auth redirects
+- Recovery type redirects to `/reset-password` automatically
 
 **Middleware Protection:**
 - `middleware.ts` checks authentication for `/dashboard` and `/admin`
 - No database queries in middleware (performance optimized)
 - Redirects unauthenticated users to `/login?redirect=<path>`
-- Redirects authenticated users away from auth pages
+- Redirects authenticated users away from `/login` and `/register`
+- `/forgot-password` and `/reset-password` intentionally NOT blocked for authenticated users (recovery sessions need access)
 
 **Admin Access Control:**
 - Role check performed in `app/(admin)/layout.tsx` (server-side)
@@ -123,10 +141,22 @@ CREATE TRIGGER on_auth_user_created
 - Non-ADMIN users redirected to dashboard with error
 
 **Email Confirmation:**
-- Callback handler at `/auth/callback` 
+- Callback handler at `/auth/callback`
 - Uses `EmailOtpType` from `@supabase/supabase-js`
 - Redirects to `/login?message=confirmed` on success
 - `/check-email` page displays instructions
+
+### ⚠️ Required Supabase Dashboard Configuration
+
+For password reset emails and magic links to work, the callback URL **must** be whitelisted:
+
+1. Supabase Dashboard → **Authentication → URL Configuration**
+2. Add to **Redirect URLs**:
+   - `http://localhost:3000/auth/callback` (local dev)
+   - `https://www.movelygo.com/auth/callback` (production — add when deploying)
+3. Set **Site URL** to your primary domain
+
+Without this, Supabase blocks the redirect and magic links silently drop to the home page.
 
 ### Session Management
 
@@ -297,53 +327,102 @@ const drivers = await prisma.driver.findMany({
 
 **Purpose:** Monitor and debug production errors
 
+**Status:** ✅ Implemented in Phase 6
+
 ### Configuration
 
 **Environment Variables:**
 ```env
-SENTRY_DSN="https://your-key@sentry.io/project-id"
 NEXT_PUBLIC_SENTRY_DSN="https://your-key@sentry.io/project-id"
 ```
 
-### Setup (Basic - Optional for Phase 0)
+### Implementation (Phase 6)
 
 **Files:**
 - `sentry.client.config.ts` - Browser error tracking
 - `sentry.server.config.ts` - Server error tracking
 - `sentry.edge.config.ts` - Edge runtime errors
 
-**Configuration:**
+**Client Configuration:**
 ```typescript
 import * as Sentry from '@sentry/nextjs'
 
 Sentry.init({
   dsn: process.env.NEXT_PUBLIC_SENTRY_DSN,
-  tracesSampleRate: 1.0,
-  environment: process.env.NODE_ENV,
+  tracesSampleRate: 0.1,
+  debug: false,
+  replaysOnErrorSampleRate: 0.1,
+  replaysSessionSampleRate: 0,
+  integrations: [
+    Sentry.replayIntegration({
+      maskAllText: true,
+      blockAllMedia: true,
+    }),
+  ],
+  beforeSend(event) {
+    // Remove IP addresses for privacy
+    if (event.user) {
+      delete event.user.ip_address
+    }
+    return event
+  },
+})
+```
+
+**Server Configuration:**
+```typescript
+Sentry.init({
+  dsn: process.env.NEXT_PUBLIC_SENTRY_DSN,
+  tracesSampleRate: 0.1,
+  debug: false,
+  beforeSend(event) {
+    if (event.user) {
+      delete event.user.ip_address
+    }
+    return event
+  },
 })
 ```
 
 ### What Gets Tracked
 
-- Unhandled exceptions
+- Unhandled exceptions (client & server)
 - Server Action errors
 - API route errors
 - Client-side errors
-- Performance metrics
+- Performance traces (10% sampling)
+- Session replays on error (10% sampling)
 
-### Error Context
+### Privacy Features
 
-Always include context:
+- IP addresses removed from all events
+- All text masked in session replays
+- All media blocked in session replays
+- Minimal sampling (10%) for traces and replays
+
+### Usage
+
+Sentry is automatically configured and will capture errors. Manual capture:
 ```typescript
-Sentry.setContext('driver', { id, slug })
-Sentry.captureException(error)
+import * as Sentry from '@sentry/nextjs'
+
+try {
+  // risky operation
+} catch (error) {
+  Sentry.captureException(error, {
+    tags: { feature: 'driver_profile' },
+    extra: { driverId: id }
+  })
+}
 ```
 
 ---
 
 ## PostHog (Analytics)
 
-**Purpose:** Product analytics and feature flags
+**Purpose:** Product analytics (complementary to core DB metrics)
+
+**Status:** ✅ Implemented in Phase 6
 
 ### Configuration
 
@@ -353,54 +432,97 @@ NEXT_PUBLIC_POSTHOG_KEY="phc_your_key"
 NEXT_PUBLIC_POSTHOG_HOST="https://app.posthog.com"
 ```
 
-### Setup (Basic - Optional for Phase 0)
+### Implementation (Phase 6)
 
-**Provider:** `@/lib/posthog/provider.tsx`
+**PostHog Client:** `@/lib/analytics/posthog-client.ts`
 ```typescript
-'use client'
 import posthog from 'posthog-js'
-import { PostHogProvider } from 'posthog-js/react'
 
-if (typeof window !== 'undefined') {
-  posthog.init(
-    process.env.NEXT_PUBLIC_POSTHOG_KEY!,
-    {
-      api_host: process.env.NEXT_PUBLIC_POSTHOG_HOST
-    }
-  )
+export function initPostHog() {
+  if (typeof window === 'undefined') return
+  
+  const key = process.env.NEXT_PUBLIC_POSTHOG_KEY
+  if (!key) return
+  
+  posthog.init(key, {
+    api_host: process.env.NEXT_PUBLIC_POSTHOG_HOST || 'https://app.posthog.com',
+    capture_pageview: false,
+    autocapture: false,
+    disable_session_recording: true,
+  })
 }
 
-export function PHProvider({ children }) {
-  return <PostHogProvider client={posthog}>{children}</PostHogProvider>
+export function trackEvent(eventName: string, properties?: Record<string, unknown>) {
+  if (typeof window === 'undefined') return
+  posthog.capture(eventName, properties)
 }
 ```
 
-### Tracked Events
+**Provider:** `@/providers/posthog-provider.tsx`
+- Wraps entire app in root layout
+- Handles automatic page view tracking
+- Initializes PostHog on mount
 
-**Automatic:**
-- Page views
-- Session duration
-- User paths
+### Tracked Events (Phase 6)
 
-**Custom:**
+**Page Views (Automatic):**
+- All page navigation tracked via PostHogProvider
+
+**Custom Events:**
+- `public_directory_viewed` - Driver directory page with city filter
+- `public_driver_profile_viewed` - Individual driver profile views
+- `dashboard_viewed` - Driver dashboard access
+- `admin_driver_reviewed` - Admin reviewing driver profile
+- `whatsapp_cta_clicked` - WhatsApp button clicks
+- `call_cta_clicked` - Call button clicks
+
+### Important: PostHog vs Database Metrics
+
+**PostHog is complementary, NOT the source of truth:**
+- Core business metrics (profile views, leads) stored in database
+- Driver dashboard reads from database, not PostHog
+- PostHog provides additional product insights and user journey analysis
+- PostHog is optional - app works without it
+
+**Database stores:**
+- Profile views with deduplication
+- Leads (WhatsApp/Call)
+- Driver metrics
+
+**PostHog tracks:**
+- Product usage patterns
+- User journeys
+- Feature adoption
+- A/B test potential
+
+### Privacy Features
+
+- Autocapture disabled (manual events only)
+- Session recording disabled
+- No PII in event properties
+- Optional integration (app works without PostHog key)
+
+### Usage
+
+**Tracking custom events:**
 ```typescript
-import { usePostHog } from 'posthog-js/react'
+import { trackEvent } from '@/lib/analytics/posthog-client'
 
-const posthog = usePostHog()
-
-posthog.capture('driver_profile_created', {
-  driver_id: driver.id,
-  city: driver.city
+trackEvent('driver_profile_updated', {
+  driver_id: id,
+  fields_changed: ['city', 'bio']
 })
 ```
 
-### Privacy Considerations
+**Page view tracking component:**
+```typescript
+import { PageViewTracker } from '@/components/analytics/page-view-tracker'
 
-- Anonymize IP addresses
-- Respect Do Not Track
-- GDPR compliant settings
-
-**Note for MVP:** PostHog is configured but not required for Phase 0 completion.
+<PageViewTracker 
+  eventName="custom_page_viewed" 
+  properties={{ page_type: 'special' }} 
+/>
+```
 
 ---
 

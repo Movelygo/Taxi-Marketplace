@@ -1,7 +1,7 @@
 # Movely - System Architecture
 
-**Last Updated:** 2026-04-06  
-**Phase:** 5 - Lead Tracking & Metrics Complete  
+**Last Updated:** 2026-05-18  
+**Phase:** 9 - Public Marketing Pages + Conversion Foundation  
 
 ## Overview
 
@@ -20,9 +20,10 @@ Movely follows a **monolithic architecture** organized by **business domains** (
 │                      NEXT.JS APP                             │
 │  ┌──────────────────────────────────────────────────────┐  │
 │  │  APP ROUTER                                           │  │
-│  │  ├── (public)    - Public pages                       │  │
-│  │  ├── (dashboard) - Driver dashboard                   │  │
-│  │  ├── (admin)     - Admin panel                        │  │
+│  │  ├── (public)    - Public pages (Navbar + Footer)     │  │
+│  │  ├── (auth)      - Login / register / recovery        │  │
+│  │  ├── (dashboard) - Driver dashboard (auth shell)      │  │
+│  │  ├── (admin)     - Admin panel (admin sidebar)        │  │
 │  │  └── /api        - API routes & webhooks              │  │
 │  └──────────────────────────────────────────────────────┘  │
 │                          │                                   │
@@ -40,7 +41,8 @@ Movely follows a **monolithic architecture** organized by **business domains** (
 │  │  ├── /drivers    - Driver management                  │  │
 │  │  ├── /leads      - Lead tracking                      │  │
 │  │  ├── /auth       - Authentication                     │  │
-│  │  └── /admin      - Admin operations                   │  │
+│  │  ├── /admin      - Admin operations                   │  │
+│  │  └── /contact    - Public inquiry submissions         │  │
 │  │                                                         │  │
 │  │  Each module has:                                      │  │
 │  │  ├── services/    - Business logic                    │  │
@@ -758,3 +760,22 @@ Phase 4 → Admin panel
 ```
 
 Each phase adds features without changing core architecture.
+
+---
+
+## Layout Shells (Phase 10.5)
+
+Each route group owns its own layout shell so individual pages stay focused on content. Adding a new page inside a group automatically inherits the shell.
+
+| Route group | Layout file | Shell contents |
+|-------------|-------------|----------------|
+| `(public)` | `app/(public)/layout.tsx` | `<Navbar />` (public nav, login/register CTAs) + `<Footer />` (brand, customer/driver links, legal). |
+| `(auth)` | `app/(auth)/layout.tsx` | Compact top bar (logo + "Browse drivers" link), centered content, small footer (Privacy / Terms / Contact). All five auth pages render their forms inside `<AuthCard />` for a consistent visual language. |
+| `(dashboard)` | `app/(dashboard)/layout.tsx` | Auth-checks at the layout (redirects unauthenticated users to `/login`), renders `<DashboardHeader />` (brand + Overview / Profile / Browse drivers + account dropdown w/ sign out) and a minimal product footer. Pages do **not** render their own logout buttons. |
+| `(admin)` | `app/(admin)/layout.tsx` | Two-column shell with `<AdminSidebar />` on the left and content on the right. Admin role is enforced here. |
+
+**Shared visual primitives:**
+- `components/auth/auth-card.tsx` — used by all auth pages.
+- `components/dashboard/dashboard-header.tsx` — used by the dashboard layout.
+- `components/layout/navbar.tsx`, `components/layout/footer.tsx` — used by the public layout.
+- `components/admin/admin-sidebar.tsx` — used by the admin layout.

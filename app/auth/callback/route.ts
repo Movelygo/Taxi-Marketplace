@@ -7,18 +7,19 @@ export async function GET(request: Request) {
   const code = searchParams.get('code')
   const token_hash = searchParams.get('token_hash')
   const type = searchParams.get('type') as EmailOtpType | null
+  const next = searchParams.get('next') ?? '/dashboard'
   const supabase = await createClient()
 
-  // Handle PKCE flow (code parameter)
+  // Handle PKCE flow (code parameter — used by password reset emails)
   if (code) {
     const { error } = await supabase.auth.exchangeCodeForSession(code)
 
     if (!error) {
-      return NextResponse.redirect(new URL('/dashboard', origin))
+      return NextResponse.redirect(new URL(next, origin))
     }
   }
 
-  // Handle magic link flow (token_hash + type parameters)
+  // Handle magic link / OTP flow (token_hash + type parameters)
   if (token_hash && type) {
     const { error } = await supabase.auth.verifyOtp({
       type,
@@ -26,7 +27,10 @@ export async function GET(request: Request) {
     })
 
     if (!error) {
-      return NextResponse.redirect(new URL('/dashboard', origin))
+      if (type === 'recovery') {
+        return NextResponse.redirect(new URL('/reset-password', origin))
+      }
+      return NextResponse.redirect(new URL(next, origin))
     }
   }
 
