@@ -6,6 +6,47 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ---
 
+## [Phase 11] - 2026-08-01
+
+### Coming Soon Page & Production Deployment Prep
+
+**Summary:** First step of the launch sequence (handoff milestones M1→M3). The repo was already committed through Phase 10.5; this phase adds a public **Coming Soon** landing page with an email waitlist, a middleware gate that hides the real app behind it on the public domain while we keep building, and the schema/env scaffolding for deploying to Vercel + Supabase production. Strategy: `movelygo.com` (Vercel Production) shows Coming Soon; the real app is developed and tested on a staging/preview environment where the gate is disabled.
+
+### Added
+
+- **`WaitlistEntry` Prisma model** (`prisma/schema.prisma`) — `id`, unique `email`, `createdAt`. Table `waitlist_entries`. Single-purpose: stores emails captured by the Coming Soon page. Apply with `npx prisma db push` (additive, no data loss).
+- **`modules/waitlist/`** — follows the established module pattern (validation → repository → service → server action):
+  - `validations/waitlist.schema.ts` — Zod email validation.
+  - `repositories/waitlist.repository.ts` — `upsertByEmail` (idempotent on unique email, so duplicate signups never error).
+  - `services/waitlist.service.ts` — `subscribe`.
+  - `actions/subscribe.ts` — typed `SubscribeState` server action used by the Coming Soon form; friendly fallback to `hello@movelygo.com` on persistence failure.
+- **Coming Soon page** (`app/coming-soon/page.tsx`) — standalone route (outside the `(public)` group, so no Navbar/Footer). Full-screen navy/amber brand hero: wordmark, "Coming Soon" eyebrow, value prop, email capture, trust chips (no fees / direct contact / independent drivers), and contact email in the footer. Redirects to `/` when `NEXT_PUBLIC_SITE_STATUS !== 'coming_soon'` so the route is never orphaned post-launch.
+- **`ComingSoonForm`** (`components/public/coming-soon-form.tsx`) — client component using `useActionState` + `useFormStatus`, matching the `ContactForm` interaction pattern (inline success / field-error / general-error states).
+- **Coming Soon gate in `middleware.ts`** — when `NEXT_PUBLIC_SITE_STATUS=coming_soon`, `/` is rewritten to `/coming-soon`, `/auth/*` stays functional (so Supabase email links never break), and every other route redirects to `/`. The gate short-circuits before the Supabase session refresh, so public visitors never trigger an auth call. When the env var is unset (local + staging), the existing middleware behavior is unchanged.
+- **`docs/DEPLOYMENT_RUNBOOK.md`** — step-by-step deploy guide for Vercel (CLI) + Supabase (dashboard): environment strategy, env vars per environment, domain wiring, auth/SMTP/webhook config.
+
+### Changed
+
+- **`.env.example`** — documented `NEXT_PUBLIC_SITE_STATUS` (unset / `live` locally and on staging; `coming_soon` only in Vercel Production).
+- **Git hygiene** — committed the previously-untracked `.windsurf/` rules + skill (commit `913e4ca`) and pushed `main`. Created and pushed the `develop` branch (staging/preview tracks this; `main` tracks Production / Coming Soon).
+
+### Verified
+
+- `npx tsc --noEmit` — clean.
+- `npm run lint` — clean, no warnings.
+- `npm run build` — successful production build, 18 routes (Coming Soon route is dynamic `ƒ` so its env-var guard runs at request time, not build time).
+
+### Database
+
+- New `waitlist_entries` table. Additive. Apply with `npx prisma db push` together with the still-pending `inquiries` table and `drivers.featured_order` column from Phases 10/10.5.
+
+### Notes / Strategy
+
+- The Coming Soon gate is **environment-driven, not branch-driven**: the same code deploys to both Production and Preview. Vercel sets `NEXT_PUBLIC_SITE_STATUS=coming_soon` only in the Production environment, so `movelygo.com` shows Coming Soon while every Preview deployment (and local dev) shows the full app. At launch, set the Production env var to `live` (or remove it) and redeploy.
+- During Coming Soon, Supabase auth redirect URLs should point to the **staging** URL + localhost (not the public domain), and the user-sync webhook should target the **staging** URL. Switch both to the production domain at launch.
+
+---
+
 ## [Phase 10.5] - 2026-05-19
 
 ### Layout Consistency + Contact Form Verification
