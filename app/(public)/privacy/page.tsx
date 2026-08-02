@@ -5,7 +5,7 @@ export const metadata = {
   description: 'How Movely collects, uses, and protects your personal information.',
 }
 
-const LAST_UPDATED = '2026-05-18'
+const LAST_UPDATED = '2026-08-02'
 
 export default function PrivacyPage() {
   return (
@@ -13,7 +13,6 @@ export default function PrivacyPage() {
       title="Privacy Policy"
       subtitle="How Movely collects, uses, and protects your personal information."
       lastUpdated={LAST_UPDATED}
-      draft
     >
       <LegalSection title="Overview">
         <p>

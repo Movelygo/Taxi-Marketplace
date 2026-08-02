@@ -2,6 +2,12 @@
 
 import { inquirySchema } from '../validations/inquiry.schema'
 import { InquiryService } from '../services/inquiry.service'
+import { SystemConfigService } from '@/modules/system-config/services/system-config.service'
+import { sendEmail } from '@/lib/email/email-sender'
+import {
+  buildInquiryAdminNotificationHtml,
+  buildInquiryAdminNotificationText,
+} from '@/lib/email/templates/inquiry-admin-notification'
 
 export type SubmitInquiryState =
   | { status: 'idle' }
@@ -12,14 +18,6 @@ export type SubmitInquiryState =
       fieldErrors?: Partial<Record<'name' | 'email' | 'subject' | 'message', string>>
     }
 
-/**
- * Server action used by the public /contact page.
- *
- * Validates the form input with Zod, persists it via InquiryService, and
- * returns a typed state. Never exposes internal database errors — if the
- * persistence layer fails (e.g. the migration hasn't been applied yet),
- * the user gets a friendly message that redirects them to email instead.
- */
 export async function submitInquiry(
   _prev: SubmitInquiryState,
   formData: FormData,
@@ -49,7 +47,26 @@ export async function submitInquiry(
   }
 
   try {
-    await InquiryService.submit(parsed.data)
+    const inquiry = await InquiryService.submit(parsed.data)
+
+    try {
+      const [adminEmail, sender] = await Promise.all([
+        SystemConfigService.getAdminNotificationEmail(),
+        SystemConfigService.getSender(),
+      ])
+
+      await sendEmail({
+        from: sender.full,
+        to: adminEmail,
+        subject: `New Movely inquiry: ${inquiry.subject}`,
+        html: buildInquiryAdminNotificationHtml(inquiry),
+        text: buildInquiryAdminNotificationText(inquiry),
+        replyTo: inquiry.email,
+      })
+    } catch (emailError) {
+      console.error('[submitInquiry] notification email failed:', emailError)
+    }
+
     return { status: 'success' }
   } catch (error) {
     console.error('[submitInquiry] persistence failure:', error)

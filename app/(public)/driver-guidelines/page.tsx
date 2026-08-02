@@ -5,7 +5,7 @@ export const metadata = {
   description: 'Community standards for drivers listed on Movely.',
 }
 
-const LAST_UPDATED = '2026-05-18'
+const LAST_UPDATED = '2026-08-02'
 
 export default function DriverGuidelinesPage() {
   return (

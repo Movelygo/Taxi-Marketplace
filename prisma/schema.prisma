@@ -156,3 +156,16 @@ model Ad {
   @@index([isActive])
   @@map("ads")
 }
+
+// Key-value configuration store for admin-managed runtime settings.
+// Keeps business constants out of code and env vars where possible.
+model SystemConfig {
+  id          String   @id @default(uuid())
+  key         String   @unique
+  value       String
+  description String?
+  updatedAt   DateTime @updatedAt @map("updated_at")
+  updatedBy   String?  @map("updated_by")
+
+  @@map("system_configs")
+}

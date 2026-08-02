@@ -5,6 +5,7 @@ import { updateDriverStatus } from '@/modules/admin/actions/update-driver-status
 import { toggleFeatured } from '@/modules/admin/actions/toggle-featured'
 import { Button } from '@/components/ui/button'
 import { DriverStatus } from '@prisma/client'
+import { trackEvent } from '@/lib/analytics/posthog-client'
 
 interface DriverStatusActionsProps {
   driverId: string
@@ -22,15 +23,25 @@ export function DriverStatusActions({ driverId, currentStatus, isFeatured }: Dri
     setError(null)
     setSuccess(null)
 
-    const result = await updateDriverStatus(driverId, newStatus)
+    try {
+      const result = await updateDriverStatus(driverId, newStatus)
 
-    if (result.error) {
-      setError(result.error)
-    } else {
-      setSuccess(`Driver status updated to ${newStatus}`)
+      if (result.error) {
+        setError(result.error)
+      } else {
+        setSuccess(`Driver status updated to ${newStatus}`)
+        trackEvent('driver_status_changed', {
+          driver_id: driverId,
+          previous_status: currentStatus,
+          new_status: newStatus,
+        })
+      }
+    } catch (err) {
+      console.error('[DriverStatusActions] status change failed:', err)
+      setError('An unexpected error occurred')
+    } finally {
+      setLoading(false)
     }
-
-    setLoading(false)
   }
 
   const handleToggleFeatured = async () => {
@@ -38,15 +49,24 @@ export function DriverStatusActions({ driverId, currentStatus, isFeatured }: Dri
     setError(null)
     setSuccess(null)
 
-    const result = await toggleFeatured(driverId, !isFeatured)
+    try {
+      const result = await toggleFeatured(driverId, !isFeatured)
 
-    if (result.error) {
-      setError(result.error)
-    } else {
-      setSuccess(`Featured status ${!isFeatured ? 'enabled' : 'disabled'}`)
+      if (result.error) {
+        setError(result.error)
+      } else {
+        setSuccess(`Featured status ${!isFeatured ? 'enabled' : 'disabled'}`)
+        trackEvent('driver_featured_toggled', {
+          driver_id: driverId,
+          featured: !isFeatured,
+        })
+      }
+    } catch (err) {
+      console.error('[DriverStatusActions] featured toggle failed:', err)
+      setError('An unexpected error occurred')
+    } finally {
+      setLoading(false)
     }
-
-    setLoading(false)
   }
 
   return (

@@ -1,8 +1,9 @@
 'use client'
 
-import { useActionState } from 'react'
+import { useActionState, useEffect } from 'react'
 import { useFormStatus } from 'react-dom'
 import { submitInquiry, type SubmitInquiryState } from '@/modules/contact/actions/submit-inquiry'
+import { trackEvent } from '@/lib/analytics/posthog-client'
 import Link from 'next/link'
 
 const SUPPORT_EMAIL = 'hello@movelygo.com'
@@ -37,6 +38,12 @@ function SubmitButton() {
 
 export function ContactForm() {
   const [state, formAction] = useActionState(submitInquiry, INITIAL_STATE)
+
+  useEffect(() => {
+    if (state.status === 'success') {
+      trackEvent('inquiry_submitted')
+    }
+  }, [state.status])
 
   if (state.status === 'success') {
     return (

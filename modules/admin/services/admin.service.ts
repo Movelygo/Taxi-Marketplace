@@ -10,6 +10,12 @@ export class AdminService {
     return AdminRepository.findDriverById(id)
   }
 
+  static async getDriverWithUserById(
+    id: string,
+  ): Promise<(Driver & { user: { email: string } }) | null> {
+    return AdminRepository.findDriverWithUserById(id)
+  }
+
   static async updateDriverStatus(id: string, status: DriverStatus): Promise<Driver> {
     return AdminRepository.updateDriverStatus(id, status)
   }

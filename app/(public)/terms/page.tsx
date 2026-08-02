@@ -5,7 +5,7 @@ export const metadata = {
   description: 'The terms that govern your use of the Movely directory.',
 }
 
-const LAST_UPDATED = '2026-05-18'
+const LAST_UPDATED = '2026-08-02'
 
 export default function TermsPage() {
   return (
@@ -13,7 +13,6 @@ export default function TermsPage() {
       title="Terms of Service"
       subtitle="The terms that govern your use of the Movely directory."
       lastUpdated={LAST_UPDATED}
-      draft
     >
       <LegalSection title="What Movely is">
         <p>

@@ -1,28 +1,27 @@
 import { PrismaClient } from '@prisma/client'
+import { CONFIG_KEYS, DEFAULT_CONFIG } from '../modules/system-config/types'
 
 const prisma = new PrismaClient()
 
 async function main() {
   console.log('🌱 Starting database seed...')
 
-  // Create admin user (ID must be created in Supabase Auth first)
-  // This is just a placeholder - actual admin must be created via Supabase
-  console.log('ℹ️  Note: Admin user must be created in Supabase Auth first')
-  console.log('ℹ️  Then run this seed with the actual UUID')
-
-  // Example: Uncomment and update with actual Supabase auth user ID
-  /*
-  const adminUser = await prisma.user.upsert({
-    where: { email: 'admin@taxilink.com' },
-    update: {},
-    create: {
-      id: 'YOUR_SUPABASE_AUTH_USER_UUID_HERE',
-      email: 'admin@taxilink.com',
-      role: UserRole.ADMIN,
-    },
-  })
-  console.log('✅ Admin user created:', adminUser.email)
-  */
+  // Seed default system configuration
+  for (const key of Object.values(CONFIG_KEYS)) {
+    const exists = await prisma.systemConfig.findUnique({ where: { key } })
+    if (!exists) {
+      await prisma.systemConfig.create({
+        data: {
+          key,
+          value: DEFAULT_CONFIG[key].value,
+          description: DEFAULT_CONFIG[key].description,
+        },
+      })
+      console.log(`✅ Created default config: ${key}`)
+    } else {
+      console.log(`ℹ️  Config already exists: ${key}`)
+    }
+  }
 
   console.log('✅ Seed completed')
 }

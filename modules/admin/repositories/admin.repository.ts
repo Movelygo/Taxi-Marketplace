@@ -15,6 +15,13 @@ export class AdminRepository {
     })
   }
 
+  static async findDriverWithUserById(id: string): Promise<(Driver & { user: { email: string } }) | null> {
+    return prisma.driver.findUnique({
+      where: { id },
+      include: { user: { select: { email: true } } },
+    })
+  }
+
   static async updateDriverStatus(id: string, status: DriverStatus): Promise<Driver> {
     return prisma.driver.update({
       where: { id },

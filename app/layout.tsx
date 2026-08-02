@@ -26,6 +26,7 @@ export default function RootLayout({
   return (
     <html lang="en" className={cn("font-sans", geist.variable)}>
       <body className={inter.className}>
+        
         <PostHogProvider>
           {children}
         </PostHogProvider>
