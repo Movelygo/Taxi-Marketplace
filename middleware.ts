@@ -2,6 +2,21 @@ import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 
 export async function middleware(request: NextRequest) {
+  const host = request.headers.get('host') || ''
+  const isProduction =
+    host === 'movelygo.com' || host === 'www.movelygo.com'
+
+  /**
+   * Apply X-Robots-Tag to any response on non-production hosts.
+   * This prevents staging, preview, and localhost from being indexed.
+   */
+  function withNoIndex(res: NextResponse): NextResponse {
+    if (!isProduction) {
+      res.headers.set('X-Robots-Tag', 'noindex, nofollow')
+    }
+    return res
+  }
+
   // Coming Soon gate — when NEXT_PUBLIC_SITE_STATUS=coming_soon (set only in
   // the Vercel Production environment), the public site shows a standalone
   // Coming Soon page. The real app stays fully accessible on the
@@ -12,11 +27,12 @@ export async function middleware(request: NextRequest) {
     if (pathname === '/auth/callback' || pathname.startsWith('/auth/')) {
       // fall through to the normal session-refresh logic below
     } else if (pathname === '/') {
-      return NextResponse.rewrite(new URL('/coming-soon', request.url))
+      return withNoIndex(NextResponse.rewrite(new URL('/coming-soon', request.url)))
     } else if (pathname === '/coming-soon') {
+      // Production Coming Soon page is indexable — no X-Robots-Tag
       return NextResponse.next()
     } else {
-      return NextResponse.redirect(new URL('/', request.url))
+      return withNoIndex(NextResponse.redirect(new URL('/', request.url)))
     }
   }
 
@@ -53,30 +69,30 @@ export async function middleware(request: NextRequest) {
   // Protect /dashboard - requires authenticated user
   if (request.nextUrl.pathname.startsWith('/dashboard')) {
     if (!user) {
-      return NextResponse.redirect(
+      return withNoIndex(NextResponse.redirect(
         new URL(`/login?redirect=${request.nextUrl.pathname}`, request.url)
-      )
+      ))
     }
   }
 
   // Protect /admin - requires authenticated user (role check in layout)
   if (request.nextUrl.pathname.startsWith('/admin')) {
     if (!user) {
-      return NextResponse.redirect(
+      return withNoIndex(NextResponse.redirect(
         new URL(`/login?redirect=${request.nextUrl.pathname}`, request.url)
-      )
+      ))
     }
   }
 
   // Redirect authenticated users away from auth pages
-  if (request.nextUrl.pathname.startsWith('/login') || 
+  if (request.nextUrl.pathname.startsWith('/login') ||
       request.nextUrl.pathname.startsWith('/register')) {
     if (user) {
-      return NextResponse.redirect(new URL('/dashboard', request.url))
+      return withNoIndex(NextResponse.redirect(new URL('/dashboard', request.url)))
     }
   }
 
-  return supabaseResponse
+  return withNoIndex(supabaseResponse)
 }
 
 export const config = {
