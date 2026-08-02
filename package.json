@@ -37,7 +37,7 @@
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3.3.5",
-    "@sentry/nextjs": "^8.55.1",
+    "@sentry/nextjs": "^10.69.0",
     "@types/node": "^22",
     "@types/react": "^19",
     "@types/react-dom": "^19",
