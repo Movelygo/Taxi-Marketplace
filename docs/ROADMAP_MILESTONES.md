@@ -324,6 +324,47 @@ New structure (mobile-first):
 
 ---
 
+### FASE J — Performance & UX polish (continuous, priority items)
+
+**Purpose:** make every interaction feel instant. Users on mobile with weak signal should never wait for a dropdown to populate or a list to render. This is not a single sprint — it's a set of patterns to apply opportunistically and as user feedback arrives.
+
+#### J1 — Typeahead city selector (driver profile + admin) — ~1 day
+- Replace the city `<select>` dropdown with a combobox/typeahead that fetches cities in batches as the user types
+- Show ~10 results at a time, debounced (150ms), filtered server-side by name prefix
+- Use the local JSON data (already shipped in B1) — no network round-trip needed for filtering
+- **Geolocation pre-selection:** on driver profile creation, use `navigator.geolocation` to pre-select the nearest city (opt-in, graceful fallback to manual)
+- *Why:* a `<select>` with 355 Maryland cities is unusable on mobile. Typeahead + geo pre-selection = 2 taps instead of scrolling a giant list.
+- *Applies to:* driver profile form, admin city manager (already has search but could be smarter), future customer search
+
+#### J2 — Directory search & filtering optimization — ~1.5 days
+- Server-side filtering with debounced search (city, name, vehicle type, amenities)
+- Pagination or infinite scroll (show 12 at a time, load more on scroll)
+- Filter state in URL (`/drivers?city=baltimore&vehicle=Sedan`) for shareable/bookmarkable searches
+- Skeleton loaders instead of blank screens during fetch
+- *Why:* the current `/drivers` page loads all approved drivers at once. With 100+ drivers this will degrade. Build the pattern now while the dataset is small.
+
+#### J3 — Image optimization audit — ~0.5 day
+- Audit Next.js Image config: ensure all driver photos use proper `sizes` attributes
+- Generate responsive `srcset` for gallery images (avoid loading 4K photos on mobile)
+- Consider Supabase image transforms (resize on upload or on-the-fly) to reduce payload
+- *Why:* vehicle gallery photos can be 3-5MB each from a phone camera. Mobile users on 4G will bounce if the directory loads slowly.
+
+#### J4 — Database query audit — ~0.5 day
+- Add Prisma `select` projections to all repository queries (avoid `SELECT *` patterns)
+- Add indexes for common filter combinations (city + status, status + createdAt)
+- Review N+1 patterns in admin lists (drivers with their city, photos, amenities)
+- *Why:* as data grows, unbounded queries become the #1 performance killer.
+
+#### J5 — Caching strategy — ~1 day
+- Cache city list (rarely changes) with `unstable_cache` or ISR
+- Cache active amenities/payment methods catalog
+- Consider edge caching for public driver profiles (ISR with on-demand revalidation on profile update)
+- *Why:* the city dropdown and filter options are loaded on every page view but change maybe once a month.
+
+**Fase J total: ~4.5 days (but can be interleaved with other phases)**
+
+---
+
 ## 6. Sequence summary & effort
 
 | Fase | Theme | Effort | Cumulative |
@@ -337,6 +378,7 @@ New structure (mobile-first):
 | G | Full admin | ~4d | 28.5d |
 | H | SEO & LAUNCH 🚀 | ~4d | 32.5d |
 | I | Monetization (post-launch) | ~6.5d | 39d |
+| J | Performance & UX polish (interleaved) | ~4.5d | as-needed |
 
 **Notes on sequencing:**
 - A can start immediately; it's independent of everything.
