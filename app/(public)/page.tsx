@@ -1,8 +1,8 @@
 import Link from 'next/link'
 import { FAQ } from '@/components/public/faq'
-import { CITIES } from '@/lib/constants/cities'
 import { FeaturedDriversSection } from '@/components/public/featured-drivers-section'
 import { HeroVisual } from '@/components/public/hero-visual'
+import { CityService } from '@/modules/cities/services/city.service'
 
 export const metadata = {
   title: 'Find Trusted Independent Drivers in Maryland, Baltimore & DC',
@@ -39,7 +39,8 @@ const HOMEPAGE_FAQ = [
   },
 ]
 
-export default function HomePage() {
+export default async function HomePage() {
+  const cities = await CityService.getAllActive()
   return (
     <div>
       {/* Hero Section — balanced 2-column layout on lg+ */}
@@ -85,7 +86,7 @@ export default function HomePage() {
 
             {/* Visual column — hidden on small screens, structural slot for future enhancements */}
             <div className="hidden lg:block lg:col-span-5">
-              <HeroVisual />
+              <HeroVisual cityNames={cities.map((c) => c.name)} />
             </div>
           </div>
         </div>
@@ -217,13 +218,13 @@ export default function HomePage() {
           </div>
 
           <div className="flex flex-wrap justify-center gap-2 sm:gap-3">
-            {CITIES.map((city) => (
+            {cities.map((city) => (
               <Link
-                key={city}
-                href={`/drivers?city=${encodeURIComponent(city)}`}
+                key={city.id}
+                href={`/drivers?city=${encodeURIComponent(city.name)}`}
                 className="px-4 py-2 rounded-full bg-gray-100 hover:bg-[#0B1F3D] hover:text-white text-sm font-medium text-gray-700 transition-colors"
               >
-                {city}
+                {city.name}
               </Link>
             ))}
           </div>

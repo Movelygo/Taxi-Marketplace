@@ -3,13 +3,14 @@
 import { useState } from 'react'
 import { ProfileForm } from '@/components/drivers/profile-form'
 import { ProfileImageUpload } from '@/components/drivers/profile-image-upload'
-import type { Driver } from '@prisma/client'
+import type { Driver, City } from '@prisma/client'
 
 interface ProfileClientProps {
   profile: Driver | null
+  cities?: City[]
 }
 
-export function ProfileClient({ profile }: ProfileClientProps) {
+export function ProfileClient({ profile, cities = [] }: ProfileClientProps) {
   const [formBusy, setFormBusy] = useState(false)
   const [uploadBusy, setUploadBusy] = useState(false)
 
@@ -17,10 +18,11 @@ export function ProfileClient({ profile }: ProfileClientProps) {
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
       {/* Main Form - Takes 2 columns on large screens */}
       <div className="lg:col-span-2">
-        <ProfileForm 
-          profile={profile} 
+        <ProfileForm
+          profile={profile}
           externalBusy={uploadBusy}
           onFormStateChange={setFormBusy}
+          cities={cities}
         />
       </div>
       

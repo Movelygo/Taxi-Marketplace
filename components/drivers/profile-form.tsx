@@ -4,7 +4,7 @@ import React, { useActionState } from 'react'
 import { useFormStatus } from 'react-dom'
 import { createProfile } from '@/modules/drivers/actions/create-profile'
 import { updateProfile } from '@/modules/drivers/actions/update-profile'
-import type { Driver } from '@prisma/client'
+import type { Driver, City } from '@prisma/client'
 
 function SubmitButton({ isUpdate, externalBusy, onStateChange }: { 
   isUpdate: boolean
@@ -33,9 +33,10 @@ interface ProfileFormProps {
   profile?: Driver | null
   externalBusy?: boolean
   onFormStateChange?: (pending: boolean) => void
+  cities?: City[]
 }
 
-export function ProfileForm({ profile, externalBusy = false, onFormStateChange }: ProfileFormProps) {
+export function ProfileForm({ profile, externalBusy = false, onFormStateChange, cities = [] }: ProfileFormProps) {
   const isUpdate = !!profile
   const action = isUpdate ? updateProfile : createProfile
   const [state, formAction] = useActionState(action, undefined)
@@ -115,15 +116,20 @@ export function ProfileForm({ profile, externalBusy = false, onFormStateChange }
             <label htmlFor="city" className="block text-sm font-semibold text-gray-900">
               City *
             </label>
-            <input
+            <select
               id="city"
               name="city"
-              type="text"
-              placeholder="Baltimore, MD"
-              defaultValue={profile?.city}
               required
-              className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#0B1F3D] focus:border-transparent outline-none transition-all"
-            />
+              defaultValue={profile?.city ?? ''}
+              className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#0B1F3D] focus:border-transparent outline-none transition-all bg-white"
+            >
+              <option value="" disabled>Select your city</option>
+              {cities.map((city) => (
+                <option key={city.id} value={city.name}>
+                  {city.name}, {city.state}
+                </option>
+              ))}
+            </select>
             {state?.error && typeof state.error === 'object' && 'city' in state.error && (
               <p className="text-sm text-red-500">{state.error.city?.[0]}</p>
             )}

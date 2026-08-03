@@ -1,4 +1,5 @@
 import { DriverService } from '@/modules/drivers/services/driver.service'
+import { CityService } from '@/modules/cities/services/city.service'
 import { PageViewTracker } from '@/components/analytics/page-view-tracker'
 import { DriverGrid } from '@/components/public/DriverGrid'
 import Link from 'next/link'
@@ -18,15 +19,18 @@ export default async function DriversPage({ searchParams }: DriversPageProps) {
   const params = await searchParams
   const selectedCity = params.city
 
-  const drivers = await DriverService.getPublicDrivers(selectedCity)
+  const [drivers, cities] = await Promise.all([
+    DriverService.getPublicDrivers(selectedCity),
+    CityService.getAllActive(),
+  ])
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <PageViewTracker 
-        eventName="public_directory_viewed" 
-        properties={{ city: selectedCity || 'all', driver_count: drivers.length }} 
+      <PageViewTracker
+        eventName="public_directory_viewed"
+        properties={{ city: selectedCity || 'all', driver_count: drivers.length }}
       />
-      
+
       {/* Hero Section */}
       <div className="bg-white border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-12 sm:py-14">
@@ -48,14 +52,19 @@ export default async function DriversPage({ searchParams }: DriversPageProps) {
                 Filter by city
               </label>
               <div className="flex gap-2">
-                <input
+                <select
                   id="city"
-                  type="text"
                   name="city"
                   defaultValue={selectedCity || ''}
-                  placeholder="e.g. Baltimore"
                   className="flex-1 px-4 py-2.5 bg-white border border-gray-300 rounded-lg text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-[#0B1F3D] focus:border-transparent"
-                />
+                >
+                  <option value="">All cities</option>
+                  {cities.map((city) => (
+                    <option key={city.id} value={city.name}>
+                      {city.name}, {city.state}
+                    </option>
+                  ))}
+                </select>
                 <button
                   type="submit"
                   className="px-4 py-2.5 bg-[#0B1F3D] text-white rounded-lg font-semibold text-sm hover:bg-[#001F3F] transition-colors"

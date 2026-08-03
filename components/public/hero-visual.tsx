@@ -1,5 +1,3 @@
-import { CITIES } from '@/lib/constants/cities'
-
 /**
  * Hero visual slot — minimalist composition built from real data.
  * No stock photos, no illustrations. Just real city names rendered
@@ -8,9 +6,13 @@ import { CITIES } from '@/lib/constants/cities'
  * This is a structural placeholder ready to host richer visual content
  * (e.g. featured driver mini-cards, abstract motifs) in future phases.
  */
-export function HeroVisual() {
-  // Use a deterministic subset to keep the composition stable.
-  const cities = CITIES.slice(0, 9)
+interface HeroVisualProps {
+  cityNames?: string[]
+}
+
+export function HeroVisual({ cityNames = [] }: HeroVisualProps) {
+  // Use up to 9 cities to keep the composition stable.
+  const cities = cityNames.slice(0, 9)
 
   return (
     <div className="relative aspect-square max-w-md w-full mx-auto">

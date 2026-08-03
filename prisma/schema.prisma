@@ -29,6 +29,22 @@ enum UserRole {
   ADMIN
 }
 
+// City — admin-managed, replaces free-text Driver.city
+model City {
+  id        String   @id @default(uuid())
+  name      String   @unique
+  slug      String   @unique
+  state     String
+  isActive  Boolean  @default(true) @map("is_active")
+  sortOrder Int      @default(0) @map("sort_order")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  drivers Driver[]
+
+  @@map("cities")
+}
+
 // Driver profile
 model Driver {
   id                 String             @id @default(uuid())
@@ -38,7 +54,9 @@ model Driver {
   displayName        String             @map("display_name")
   phone              String
   whatsappNumber     String             @map("whatsapp_number")
-  city               String
+  cityId             String?            @map("city_id")
+  city               String             // legacy free-text; kept for migration safety, will be removed after B1
+  cityRel            City?              @relation(fields: [cityId], references: [id])
   serviceAreaText    String             @map("service_area_text") @db.Text
   vehicleType        String             @map("vehicle_type")
   languages          String[]
@@ -55,6 +73,8 @@ model Driver {
   profileViews ProfileView[]
   leads        Lead[]
 
+  @@index([cityId, status, isFeatured])
+  @@index([status, cityId])
   @@index([city, status, isFeatured])
   @@index([status, city])
   @@index([slug])
