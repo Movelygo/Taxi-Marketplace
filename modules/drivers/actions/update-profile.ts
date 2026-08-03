@@ -30,6 +30,15 @@ function getFormArray(formData: FormData, key: string): string[] {
   return formData.getAll(key).filter((v): v is string => typeof v === 'string' && v.length > 0)
 }
 
+// Convert empty string or null to undefined — prevents sending empty strings
+// for optional fields where the intent is "no change" or "leave empty"
+function optionalString(formData: FormData, key: string): string | undefined {
+  const val = formData.get(key)
+  if (val === null) return undefined
+  const str = (val as string).trim()
+  return str || undefined
+}
+
 export async function updateProfile(_prevState: UpdateProfileState, formData: FormData): Promise<UpdateProfileState> {
   const user = await getCurrentUser()
 
@@ -62,12 +71,12 @@ export async function updateProfile(_prevState: UpdateProfileState, formData: Fo
   const vehicleType = formData.get('vehicleType') as string
   if (vehicleType) rawData.vehicleType = vehicleType
 
-  rawData.vehicleMake = (formData.get('vehicleMake') as string) || undefined
-  rawData.vehicleModel = (formData.get('vehicleModel') as string) || undefined
-  rawData.vehicleYear = (formData.get('vehicleYear') as string) || undefined
-  rawData.vehicleColor = (formData.get('vehicleColor') as string) || undefined
-  rawData.passengerCapacity = (formData.get('passengerCapacity') as string) || undefined
-  rawData.operatingHours = (formData.get('operatingHours') as string) || undefined
+  rawData.vehicleMake = optionalString(formData, 'vehicleMake')
+  rawData.vehicleModel = optionalString(formData, 'vehicleModel')
+  rawData.vehicleYear = optionalString(formData, 'vehicleYear')
+  rawData.vehicleColor = optionalString(formData, 'vehicleColor')
+  rawData.passengerCapacity = optionalString(formData, 'passengerCapacity')
+  rawData.operatingHours = optionalString(formData, 'operatingHours')
 
   rawData.amenities = getFormArray(formData, 'amenities')
   rawData.paymentMethods = getFormArray(formData, 'paymentMethods')
@@ -75,8 +84,9 @@ export async function updateProfile(_prevState: UpdateProfileState, formData: Fo
   const languages = formData.get('languages') as string
   if (languages) rawData.languages = languages
 
-  const bio = formData.get('bio') as string
-  if (bio !== null) rawData.bio = bio
+  // Bio: allow clearing (empty string is valid), but don't send if field is absent
+  const bio = formData.get('bio')
+  if (bio !== null) rawData.bio = (bio as string).trim() || undefined
 
   const availabilityStatus = formData.get('availabilityStatus') as string
   if (availabilityStatus) rawData.availabilityStatus = availabilityStatus
@@ -85,6 +95,10 @@ export async function updateProfile(_prevState: UpdateProfileState, formData: Fo
 
   if (!validated.success) {
     const fieldErrors = validated.error.flatten().fieldErrors
+    console.error('[updateProfile] Validation failed:', {
+      fieldErrors,
+      rawDataKeys: Object.keys(rawData),
+    })
     return { error: fieldErrors } as UpdateProfileState
   }
 
@@ -94,7 +108,7 @@ export async function updateProfile(_prevState: UpdateProfileState, formData: Fo
     revalidatePath(`/drivers/${existingProfile.slug}`)
     return { success: true }
   } catch (error) {
-    console.error('Update profile error:', error)
+    console.error('[updateProfile] Server error:', error)
     return { error: 'Failed to update profile. Please try again.' }
   }
 }

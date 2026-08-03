@@ -28,6 +28,13 @@ function getFormArray(formData: FormData, key: string): string[] {
   return formData.getAll(key).filter((v): v is string => typeof v === 'string' && v.length > 0)
 }
 
+function optionalString(formData: FormData, key: string): string | undefined {
+  const val = formData.get(key)
+  if (val === null) return undefined
+  const str = (val as string).trim()
+  return str || undefined
+}
+
 export async function createProfile(_prevState: CreateProfileState, formData: FormData): Promise<CreateProfileState> {
   const user = await getCurrentUser()
 
@@ -47,16 +54,16 @@ export async function createProfile(_prevState: CreateProfileState, formData: Fo
     city: formData.get('city') as string,
     serviceAreaText: formData.get('serviceAreaText') as string,
     vehicleType: formData.get('vehicleType') as string,
-    vehicleMake: (formData.get('vehicleMake') as string) || undefined,
-    vehicleModel: (formData.get('vehicleModel') as string) || undefined,
-    vehicleYear: (formData.get('vehicleYear') as string) || undefined,
-    vehicleColor: (formData.get('vehicleColor') as string) || undefined,
-    passengerCapacity: (formData.get('passengerCapacity') as string) || undefined,
+    vehicleMake: optionalString(formData, 'vehicleMake'),
+    vehicleModel: optionalString(formData, 'vehicleModel'),
+    vehicleYear: optionalString(formData, 'vehicleYear'),
+    vehicleColor: optionalString(formData, 'vehicleColor'),
+    passengerCapacity: optionalString(formData, 'passengerCapacity'),
     amenities: getFormArray(formData, 'amenities'),
     paymentMethods: getFormArray(formData, 'paymentMethods'),
-    operatingHours: (formData.get('operatingHours') as string) || undefined,
+    operatingHours: optionalString(formData, 'operatingHours'),
     languages: formData.get('languages') as string,
-    bio: formData.get('bio') as string || undefined,
+    bio: optionalString(formData, 'bio'),
     availabilityStatus: (formData.get('availabilityStatus') as string) || 'AVAILABLE',
   }
 
@@ -64,6 +71,10 @@ export async function createProfile(_prevState: CreateProfileState, formData: Fo
 
   if (!validated.success) {
     const fieldErrors = validated.error.flatten().fieldErrors
+    console.error('[createProfile] Validation failed:', {
+      fieldErrors,
+      rawDataKeys: Object.keys(rawData),
+    })
     return { error: fieldErrors } as CreateProfileState
   }
 
