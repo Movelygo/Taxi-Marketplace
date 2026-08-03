@@ -5,6 +5,7 @@ import { useFormStatus } from 'react-dom'
 import { createProfile } from '@/modules/drivers/actions/create-profile'
 import { updateProfile } from '@/modules/drivers/actions/update-profile'
 import { VEHICLE_CATEGORIES } from '@/modules/drivers/constants/profile-attributes'
+import { SearchableSelect } from '@/components/ui/searchable-select'
 import type { Driver, City, ProfileAttribute } from '@prisma/client'
 
 function SubmitButton({ isUpdate, externalBusy, onStateChange }: {
@@ -143,20 +144,18 @@ export function ProfileForm({
                   <label htmlFor="city" className="block text-sm font-semibold text-gray-900">
                     City *
                   </label>
-                  <select
+                  <SearchableSelect
                     id="city"
                     name="city"
                     required
                     defaultValue={profile?.city ?? ''}
-                    className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#0B1F3D] focus:border-transparent outline-none transition-all bg-white"
-                  >
-                    <option value="" disabled>Select your city</option>
-                    {cities.map((city) => (
-                      <option key={city.id} value={city.name}>
-                        {city.name}, {city.state}
-                      </option>
-                    ))}
-                  </select>
+                    placeholder="Search your city..."
+                    options={cities.map((c) => ({
+                      value: c.name,
+                      label: c.name,
+                      sublabel: c.state,
+                    }))}
+                  />
                   <FieldError state={state} field="city" />
                 </div>
 

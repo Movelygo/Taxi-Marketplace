@@ -2,6 +2,7 @@ import { DriverService } from '@/modules/drivers/services/driver.service'
 import { CityService } from '@/modules/cities/services/city.service'
 import { PageViewTracker } from '@/components/analytics/page-view-tracker'
 import { DriverGrid } from '@/components/public/DriverGrid'
+import { CityFilter } from '@/components/public/city-filter'
 import Link from 'next/link'
 
 export const metadata = {
@@ -51,27 +52,7 @@ export default async function DriversPage({ searchParams }: DriversPageProps) {
               <label htmlFor="city" className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">
                 Filter by city
               </label>
-              <div className="flex gap-2">
-                <select
-                  id="city"
-                  name="city"
-                  defaultValue={selectedCity || ''}
-                  className="flex-1 px-4 py-2.5 bg-white border border-gray-300 rounded-lg text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-[#0B1F3D] focus:border-transparent"
-                >
-                  <option value="">All cities</option>
-                  {cities.map((city) => (
-                    <option key={city.id} value={city.name}>
-                      {city.name}, {city.state}
-                    </option>
-                  ))}
-                </select>
-                <button
-                  type="submit"
-                  className="px-4 py-2.5 bg-[#0B1F3D] text-white rounded-lg font-semibold text-sm hover:bg-[#001F3F] transition-colors"
-                >
-                  Apply
-                </button>
-              </div>
+              <CityFilter cities={cities} selectedCity={selectedCity} />
             </div>
           </form>
 
