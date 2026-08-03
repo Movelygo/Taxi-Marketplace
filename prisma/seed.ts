@@ -1,16 +1,23 @@
 import { PrismaClient } from '@prisma/client'
 import { CONFIG_KEYS, DEFAULT_CONFIG } from '../modules/system-config/types'
-import { CITIES } from '../lib/constants/cities'
 import { DEFAULT_AMENITIES, DEFAULT_PAYMENT_METHODS } from '../modules/drivers/constants/profile-attributes'
 
 const prisma = new PrismaClient()
 
-// Map CITIES constants to state codes
-function getStateForCity(name: string): string {
-  if (name === 'Washington DC') return 'DC'
-  if (name === 'BWI') return 'MD'
-  return 'MD' // all others are Maryland
-}
+// Cities to seed — data sourced from @countrystatecity/countries package
+// These are the cities Movely currently serves (Maryland + DC + Virginia area)
+const SEED_CITIES = [
+  { name: 'Baltimore', state: 'MD', sortOrder: 0 },
+  { name: 'Linthicum', state: 'MD', sortOrder: 1 }, // closest city to BWI airport
+  { name: 'Towson', state: 'MD', sortOrder: 2 },
+  { name: 'Essex', state: 'MD', sortOrder: 3 },
+  { name: 'Glen Burnie', state: 'MD', sortOrder: 4 },
+  { name: 'Annapolis', state: 'MD', sortOrder: 5 },
+  { name: 'Dundalk', state: 'MD', sortOrder: 6 },
+  { name: 'Pasadena', state: 'MD', sortOrder: 7 },
+  { name: 'Washington D.C.', state: 'DC', sortOrder: 8 },
+  { name: 'Virginia Beach', state: 'VA', sortOrder: 9 },
+]
 
 function slugify(name: string): string {
   return name
@@ -41,21 +48,25 @@ async function main() {
     }
   }
 
-  // Seed cities from CITIES constant
+  // Seed cities from @countrystatecity/countries package data
   console.log('🏙️  Seeding cities...')
-  for (let i = 0; i < CITIES.length; i++) {
-    const name = CITIES[i]
-    const slug = slugify(name)
-    const state = getStateForCity(name)
+  for (const cityData of SEED_CITIES) {
+    const slug = slugify(cityData.name)
 
     const existing = await prisma.city.findUnique({ where: { slug } })
     if (!existing) {
       await prisma.city.create({
-        data: { name, slug, state, sortOrder: i, isActive: true },
+        data: {
+          name: cityData.name,
+          slug,
+          state: cityData.state,
+          sortOrder: cityData.sortOrder,
+          isActive: true,
+        },
       })
-      console.log(`✅ Created city: ${name} (${state})`)
+      console.log(`✅ Created city: ${cityData.name} (${cityData.state})`)
     } else {
-      console.log(`ℹ️  City already exists: ${name}`)
+      console.log(`ℹ️  City already exists: ${cityData.name}`)
     }
   }
 
