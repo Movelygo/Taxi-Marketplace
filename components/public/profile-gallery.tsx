@@ -41,12 +41,12 @@ export function ProfileGallery({ photos, driverName }: ProfileGalleryProps) {
   return (
     <>
       {/* Photo grid */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-3">
+      <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4 p-4 bg-gray-50">
         {photos.map((photo, index) => (
           <button
             key={photo.id}
             onClick={() => setActiveIndex(index)}
-            className="relative aspect-video rounded-lg overflow-hidden border border-gray-200 hover:ring-2 hover:ring-[#0B1F3D] transition-all group"
+            className="relative aspect-video rounded-2xl overflow-hidden border border-gray-100 hover:ring-4 hover:ring-blue-500/20 transition-all group shadow-sm"
           >
             <Image
               src={photo.url}

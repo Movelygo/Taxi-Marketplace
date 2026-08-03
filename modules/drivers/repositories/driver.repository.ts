@@ -153,6 +153,14 @@ export class DriverRepository {
         slug,
         status: 'APPROVED',
       },
+      include: {
+        cityRel: {
+          select: {
+            name: true,
+            state: true,
+          },
+        },
+      },
     })
   }
 

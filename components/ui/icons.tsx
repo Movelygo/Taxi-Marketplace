@@ -1,0 +1,70 @@
+import { 
+  Snowflake, 
+  Wifi, 
+  BatteryCharging, 
+  Baby, 
+  Dog, 
+  Accessibility, 
+  Briefcase, 
+  CigaretteOff, 
+  Moon, 
+  Plane, 
+  Map,
+  Banknote,
+  CreditCard,
+  Smartphone,
+  CheckCircle2,
+  Car,
+  Languages,
+  Clock,
+  MapPin,
+  Star,
+  ShieldCheck,
+  Calendar,
+  MessageCircle,
+  Phone,
+  ExternalLink,
+  ChevronRight,
+  User,
+  Info
+} from 'lucide-react'
+
+export const AMENITY_ICONS: Record<string, any> = {
+  ac: Snowflake,
+  wifi: Wifi,
+  phone_charger: BatteryCharging,
+  child_seat: Baby,
+  pet_friendly: Dog,
+  wheelchair_accessible: Accessibility,
+  large_trunk: Briefcase,
+  non_smoker: CigaretteOff,
+  night_service: Moon,
+  airport_specialist: Plane,
+  long_distance: Map,
+}
+
+export const PAYMENT_ICONS: Record<string, any> = {
+  cash: Banknote,
+  card: CreditCard,
+  zelle: Smartphone,
+  cashapp: Smartphone,
+  venmo: Smartphone,
+  apple_google_pay: Smartphone,
+}
+
+export { 
+  Car, 
+  Languages, 
+  Clock, 
+  MapPin, 
+  Star, 
+  ShieldCheck, 
+  Calendar, 
+  MessageCircle, 
+  Phone, 
+  ExternalLink, 
+  ChevronRight,
+  CheckCircle2,
+  User,
+  Info
+}

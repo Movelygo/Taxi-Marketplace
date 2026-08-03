@@ -81,7 +81,7 @@ export class DriverService {
     return await DriverRepository.updateProfileImage(userId, imageUrl)
   }
 
-  static async getPublicProfile(slug: string): Promise<Driver | null> {
+  static async getPublicProfile(slug: string) {
     return await DriverRepository.findApprovedBySlug(slug)
   }
 
