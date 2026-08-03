@@ -1,7 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
-import { useRouter, useSearchParams } from 'next/navigation'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import { DirectoryFilters, type FilterState } from './directory-filters'
 import { DriverCard } from './driver-card'
 import { DriverGridSkeleton } from './driver-card-skeleton'
@@ -47,19 +46,6 @@ function filtersToParams(filters: FilterState, page: number): URLSearchParams {
   return params
 }
 
-function paramsToFilters(params: URLSearchParams): FilterState {
-  return {
-    q: params.get('q') || '',
-    city: params.get('city') || '',
-    vehicleType: params.get('vehicleType') || '',
-    amenities: params.getAll('amenities'),
-    paymentMethods: params.getAll('paymentMethods'),
-    minCapacity: params.get('minCapacity') || '',
-    availabilityStatus: params.get('availabilityStatus') || '',
-    sort: (params.get('sort') as 'featured' | 'newest') || 'featured',
-  }
-}
-
 export function DirectoryClient({
   cities,
   amenities,
@@ -71,8 +57,6 @@ export function DirectoryClient({
   initialFilters,
   searchParamsObj,
 }: DirectoryClientProps) {
-  const router = useRouter()
-  const searchParams = useSearchParams()
   const [filters, setFilters] = useState<FilterState>(initialFilters)
   const [drivers, setDrivers] = useState<DriverSearchResultItem[]>(initialDrivers)
   const [total, setTotal] = useState(initialTotal)
@@ -80,58 +64,73 @@ export function DirectoryClient({
   const [loading, setLoading] = useState(false)
   const [showMobileFilters, setShowMobileFilters] = useState(false)
 
+  // Ref to track the latest fetch request and cancel stale ones
+  const fetchIdRef = useRef(0)
+
   const totalPages = Math.ceil(total / initialPageSize)
 
-  // Update URL when filters change (debounced via transition)
-  const updateUrl = useCallback(
-    (newFilters: FilterState, newPage: number = 1) => {
-      const params = filtersToParams(newFilters, newPage)
+  // Single fetch function — called on filter/page change
+  const fetchDrivers = useCallback(
+    async (currentFilters: FilterState, currentPage: number) => {
+      // Increment fetch ID to invalidate any in-flight requests
+      const fetchId = ++fetchIdRef.current
+      setLoading(true)
+
+      const params = filtersToParams(currentFilters, currentPage)
+
+      try {
+        const res = await fetch(`/api/drivers/search?${params.toString()}`)
+        if (!res.ok) throw new Error('Search failed')
+        const data = await res.json()
+
+        // Only apply results if this is still the latest fetch
+        if (fetchId === fetchIdRef.current) {
+          setDrivers(data.drivers || [])
+          setTotal(data.total || 0)
+        }
+      } catch {
+        if (fetchId === fetchIdRef.current) {
+          setDrivers([])
+          setTotal(0)
+        }
+      } finally {
+        if (fetchId === fetchIdRef.current) {
+          setLoading(false)
+        }
+      }
+
+      // Update URL silently for shareability (no navigation, no re-render)
       const qs = params.toString()
-      router.push(qs ? `/drivers?${qs}` : '/drivers')
+      const newUrl = qs ? `/drivers?${qs}` : '/drivers'
+      window.history.replaceState(null, '', newUrl)
     },
-    [router],
+    [],
   )
 
-  // Debounced URL update on filter change
+  // Debounced fetch when filters change (NOT page — page changes fetch immediately)
   useEffect(() => {
+    // Skip the initial mount — data already comes from server
+    if (fetchIdRef.current === 0) return
+
     const handler = setTimeout(() => {
-      // Skip if filters haven't actually changed from URL
-      const urlFilters = paramsToFilters(new URLSearchParams(searchParams.toString()))
-      if (JSON.stringify(filters) === JSON.stringify(urlFilters)) return
-      updateUrl(filters, 1)
-      setPage(1)
-    }, 300)
+      fetchDrivers(filters, 1)
+    }, 350)
+
     return () => clearTimeout(handler)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [filters])
+  }, [filters, fetchDrivers])
 
-  // Fetch new results when URL changes
-  useEffect(() => {
-    const urlFilters = paramsToFilters(new URLSearchParams(searchParams.toString()))
-    const urlPage = parseInt(searchParams.get('page') || '1', 10)
+  // Handle filter changes — always reset to page 1
+  const handleFiltersChange = useCallback((newFilters: FilterState) => {
+    setFilters(newFilters)
+    setPage(1)
+  }, [])
 
-    // Only fetch if something changed
-    if (JSON.stringify(urlFilters) === JSON.stringify(filters) && urlPage === page) return
-
-    setLoading(true)
-    setFilters(urlFilters)
-    setPage(urlPage)
-
-    // Fetch via API
-    const params = filtersToParams(urlFilters, urlPage)
-    fetch(`/api/drivers/search?${params.toString()}`)
-      .then((r) => r.json())
-      .then((data) => {
-        setDrivers(data.drivers || [])
-        setTotal(data.total || 0)
-      })
-      .catch(() => {
-        setDrivers([])
-        setTotal(0)
-      })
-      .finally(() => setLoading(false))
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [searchParams])
+  // Handle reset
+  const handleReset = useCallback(() => {
+    setFilters(EMPTY_FILTERS)
+    setPage(1)
+    fetchDrivers(EMPTY_FILTERS, 1)
+  }, [fetchDrivers])
 
   const activeFilterCount =
     (filters.q ? 1 : 0) +
@@ -162,7 +161,7 @@ export function DirectoryClient({
         {/* Sort dropdown */}
         <select
           value={filters.sort}
-          onChange={(e) => setFilters((prev) => ({ ...prev, sort: e.target.value as 'featured' | 'newest' }))}
+          onChange={(e) => handleFiltersChange({ ...filters, sort: e.target.value as 'featured' | 'newest' })}
           className="px-3 py-2.5 bg-white border border-gray-200 rounded-lg text-sm font-medium text-gray-700"
         >
           <option value="featured">Featured first</option>
@@ -180,7 +179,7 @@ export function DirectoryClient({
                 {/* Sort */}
                 <select
                   value={filters.sort}
-                  onChange={(e) => setFilters((prev) => ({ ...prev, sort: e.target.value as 'featured' | 'newest' }))}
+                  onChange={(e) => handleFiltersChange({ ...filters, sort: e.target.value as 'featured' | 'newest' })}
                   className="text-xs px-2 py-1 border border-gray-200 rounded text-gray-600"
                 >
                   <option value="featured">Featured</option>
@@ -192,12 +191,8 @@ export function DirectoryClient({
                 amenities={amenities}
                 paymentMethods={paymentMethods}
                 currentFilters={filters}
-                onFiltersChange={setFilters}
-                onReset={() => {
-                  setFilters(EMPTY_FILTERS)
-                  updateUrl(EMPTY_FILTERS, 1)
-                  setPage(1)
-                }}
+                onFiltersChange={handleFiltersChange}
+                onReset={handleReset}
               />
             </div>
           </div>
@@ -209,7 +204,7 @@ export function DirectoryClient({
           <div className="flex items-center justify-between mb-4">
             <p className="text-sm text-gray-600">
               {loading ? (
-                'Loading...'
+                'Searching...'
               ) : (
                 <>
                   <strong className="text-gray-900">{total}</strong> driver{total !== 1 ? 's' : ''}
@@ -235,11 +230,7 @@ export function DirectoryClient({
               </p>
               {activeFilterCount > 0 && (
                 <button
-                  onClick={() => {
-                    setFilters(EMPTY_FILTERS)
-                    updateUrl(EMPTY_FILTERS, 1)
-                    setPage(1)
-                  }}
+                  onClick={handleReset}
                   className="inline-flex items-center px-4 py-2 bg-[#0B1F3D] text-white rounded-lg text-sm font-semibold hover:bg-[#001F3F]"
                 >
                   Clear all filters
@@ -310,12 +301,8 @@ export function DirectoryClient({
                 amenities={amenities}
                 paymentMethods={paymentMethods}
                 currentFilters={filters}
-                onFiltersChange={setFilters}
-                onReset={() => {
-                  setFilters(EMPTY_FILTERS)
-                  updateUrl(EMPTY_FILTERS, 1)
-                  setPage(1)
-                }}
+                onFiltersChange={handleFiltersChange}
+                onReset={handleReset}
               />
             </div>
             <div className="p-4 border-t border-gray-200">
