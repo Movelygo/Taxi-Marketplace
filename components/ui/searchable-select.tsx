@@ -15,6 +15,8 @@ interface SearchableSelectProps {
   placeholder?: string
   required?: boolean
   defaultValue?: string
+  value?: string
+  onChange?: (value: string) => void
   disabled?: boolean
   className?: string
   emptyMessage?: string
@@ -27,6 +29,8 @@ export function SearchableSelect({
   placeholder = 'Search...',
   required = false,
   defaultValue = '',
+  value,
+  onChange,
   disabled = false,
   className = '',
   emptyMessage = 'No results found',
@@ -34,13 +38,18 @@ export function SearchableSelect({
   const generatedId = useId()
   const inputId = id || generatedId
 
+  // Controlled mode if value + onChange are provided, otherwise uncontrolled
+  const isControlled = value !== undefined && onChange !== undefined
+
   const [query, setQuery] = useState('')
   const [isOpen, setIsOpen] = useState(false)
-  const [selectedValue, setSelectedValue] = useState(defaultValue)
+  const [internalValue, setInternalValue] = useState(defaultValue)
   const [highlightedIndex, setHighlightedIndex] = useState(-1)
   const containerRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
   const listRef = useRef<HTMLDivElement>(null)
+
+  const selectedValue = isControlled ? value! : internalValue
 
   // Find the selected option's label for display when closed
   const selectedOption = useMemo(
@@ -89,7 +98,11 @@ export function SearchableSelect({
   }
 
   function handleSelect(option: SearchableOption) {
-    setSelectedValue(option.value)
+    if (isControlled) {
+      onChange!(option.value)
+    } else {
+      setInternalValue(option.value)
+    }
     setIsOpen(false)
     setQuery('')
     setHighlightedIndex(-1)

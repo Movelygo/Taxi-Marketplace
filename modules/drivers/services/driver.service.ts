@@ -1,5 +1,6 @@
 import { DriverRepository } from '../repositories/driver.repository'
 import type { CreateDriverInput, UpdateDriverInput } from '../validations/driver.schema'
+import type { DriverSearchParams, DriverSearchResult } from '../types/search'
 import type { Driver, AvailabilityStatus } from '@prisma/client'
 
 export class DriverService {
@@ -84,6 +85,10 @@ export class DriverService {
 
   static async getPublicDrivers(city?: string): Promise<Driver[]> {
     return await DriverRepository.findAllApproved(city)
+  }
+
+  static async searchPublicDrivers(params: DriverSearchParams): Promise<DriverSearchResult> {
+    return await DriverRepository.searchApproved(params)
   }
 
   static async getFeaturedDrivers(limit: number = 6): Promise<Driver[]> {
