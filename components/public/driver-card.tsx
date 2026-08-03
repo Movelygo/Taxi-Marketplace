@@ -2,6 +2,7 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { getWhatsAppLink, getPhoneCallLink } from '@/lib/utils/phone'
 import { DEFAULT_AMENITIES } from '@/modules/drivers/constants/profile-attributes'
+import type { DriverSearchResultItem } from '@/modules/drivers/types/search'
 
 // Map amenity keys to labels + icons for display
 const AMENITY_MAP: Map<string, string> = new Map(
@@ -22,27 +23,7 @@ const AMENITY_ICONS: Record<string, string> = {
   'Long-distance / interstate': '🛣',
 }
 
-interface DriverCardData {
-  id: string
-  slug: string
-  displayName: string
-  city: string
-  vehicleType: string
-  vehicleMake: string | null
-  vehicleModel: string | null
-  passengerCapacity: number | null
-  languages: string[]
-  amenities: string[]
-  availabilityStatus: 'AVAILABLE' | 'BUSY' | 'OFFLINE'
-  profileImageUrl: string | null
-  whatsappNumber: string
-  phone: string
-  isFeatured: boolean
-  bio: string | null
-  cityRel: { name: string; state: string } | null
-}
-
-export function DriverCard({ driver }: { driver: DriverCardData }) {
+export function DriverCard({ driver }: { driver: DriverSearchResultItem }) {
   const whatsappLink = getWhatsAppLink(
     driver.whatsappNumber,
     `Hi ${driver.displayName}, I found you on Movely and would like to ask about a ride.`,

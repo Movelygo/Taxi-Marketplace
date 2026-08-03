@@ -6,34 +6,15 @@ import { DirectoryFilters, type FilterState } from './directory-filters'
 import { DriverCard } from './driver-card'
 import { DriverGridSkeleton } from './driver-card-skeleton'
 import { Pagination } from './pagination'
+import type { DriverSearchResultItem } from '@/modules/drivers/types/search'
 import type { City, ProfileAttribute } from '@prisma/client'
 import Link from 'next/link'
-
-interface DriverData {
-  id: string
-  slug: string
-  displayName: string
-  city: string
-  vehicleType: string
-  vehicleMake: string | null
-  vehicleModel: string | null
-  passengerCapacity: number | null
-  languages: string[]
-  amenities: string[]
-  availabilityStatus: 'AVAILABLE' | 'BUSY' | 'OFFLINE'
-  profileImageUrl: string | null
-  whatsappNumber: string
-  phone: string
-  isFeatured: boolean
-  bio: string | null
-  cityRel: { name: string; state: string } | null
-}
 
 interface DirectoryClientProps {
   cities: City[]
   amenities: ProfileAttribute[]
   paymentMethods: ProfileAttribute[]
-  initialDrivers: DriverData[]
+  initialDrivers: DriverSearchResultItem[]
   initialTotal: number
   initialPage: number
   initialPageSize: number
@@ -93,7 +74,7 @@ export function DirectoryClient({
   const router = useRouter()
   const searchParams = useSearchParams()
   const [filters, setFilters] = useState<FilterState>(initialFilters)
-  const [drivers, setDrivers] = useState<DriverData[]>(initialDrivers)
+  const [drivers, setDrivers] = useState<DriverSearchResultItem[]>(initialDrivers)
   const [total, setTotal] = useState(initialTotal)
   const [page, setPage] = useState(initialPage)
   const [loading, setLoading] = useState(false)

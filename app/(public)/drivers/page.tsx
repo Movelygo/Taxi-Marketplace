@@ -4,6 +4,7 @@ import { getActiveProfileAttributes } from '@/modules/drivers/actions/get-profil
 import { PageViewTracker } from '@/components/analytics/page-view-tracker'
 import { DirectoryClient } from '@/components/public/directory-client'
 import type { FilterState } from '@/components/public/directory-filters'
+import { Suspense } from 'react'
 
 export const metadata = {
   title: 'Browse Drivers | Movely',
@@ -85,17 +86,19 @@ export default async function DriversPage({ searchParams }: DriversPageProps) {
         </div>
       </div>
 
-      <DirectoryClient
-        cities={cities}
-        amenities={attrs.amenities}
-        paymentMethods={attrs.paymentMethods}
-        initialDrivers={searchResult.drivers as never}
-        initialTotal={searchResult.total}
-        initialPage={searchResult.page}
-        initialPageSize={searchResult.pageSize}
-        initialFilters={filters}
-        searchParamsObj={params}
-      />
+      <Suspense fallback={<div className="max-w-7xl mx-auto px-6 py-12"><div className="animate-pulse text-gray-400">Loading directory...</div></div>}>
+        <DirectoryClient
+          cities={cities}
+          amenities={attrs.amenities}
+          paymentMethods={attrs.paymentMethods}
+          initialDrivers={searchResult.drivers}
+          initialTotal={searchResult.total}
+          initialPage={searchResult.page}
+          initialPageSize={searchResult.pageSize}
+          initialFilters={filters}
+          searchParamsObj={params}
+        />
+      </Suspense>
     </div>
   )
 }

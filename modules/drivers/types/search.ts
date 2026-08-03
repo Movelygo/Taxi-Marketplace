@@ -11,26 +11,28 @@ export interface DriverSearchParams {
   pageSize?: number
 }
 
+export interface DriverSearchResultItem {
+  id: string
+  slug: string
+  displayName: string
+  city: string
+  vehicleType: string
+  vehicleMake: string | null
+  vehicleModel: string | null
+  passengerCapacity: number | null
+  languages: string[]
+  amenities: string[]
+  availabilityStatus: 'AVAILABLE' | 'BUSY' | 'OFFLINE'
+  profileImageUrl: string | null
+  whatsappNumber: string
+  phone: string
+  isFeatured: boolean
+  bio: string | null
+  cityRel: { name: string; state: string } | null
+}
+
 export interface DriverSearchResult {
-  drivers: Array<{
-    id: string
-    slug: string
-    displayName: string
-    city: string
-    vehicleType: string
-    vehicleMake: string | null
-    vehicleModel: string | null
-    passengerCapacity: number | null
-    languages: string[]
-    amenities: string[]
-    availabilityStatus: string
-    profileImageUrl: string | null
-    whatsappNumber: string
-    phone: string
-    isFeatured: boolean
-    bio: string | null
-    cityRel: { name: string; state: string } | null
-  }>
+  drivers: DriverSearchResultItem[]
   total: number
   page: number
   pageSize: number
