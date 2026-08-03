@@ -1,4 +1,5 @@
 import { DriverService } from '@/modules/drivers/services/driver.service'
+import { GalleryService } from '@/modules/gallery/services/gallery.service'
 import { notFound } from 'next/navigation'
 import Image from 'next/image'
 import Link from 'next/link'
@@ -6,6 +7,7 @@ import { getWhatsAppLink, getPhoneCallLink } from '@/lib/utils/phone'
 import { TrackProfileView } from '@/components/public/track-profile-view'
 import { PageViewTracker } from '@/components/analytics/page-view-tracker'
 import { HeroCTAButtons } from '@/components/public/hero-cta-buttons'
+import { ProfileGallery } from '@/components/public/profile-gallery'
 import type { Metadata } from 'next'
 
 interface DriverProfilePageProps {
@@ -40,6 +42,8 @@ export default async function DriverProfilePage({ params }: DriverProfilePagePro
   if (!driver) {
     notFound()
   }
+
+  const photos = await GalleryService.getByDriverSlug(slug)
 
   const whatsappLink = getWhatsAppLink(driver.whatsappNumber, `Hi ${driver.displayName}, I found you on Movely and would like to book a ride.`)
   const phoneLink = getPhoneCallLink(driver.phone)
@@ -127,12 +131,16 @@ export default async function DriverProfilePage({ params }: DriverProfilePagePro
               </section>
             )}
 
-            {/* Compact coming-soon notes — honest, restrained */}
+            {/* Vehicle Gallery — real photos if available */}
+            {photos.length > 0 && (
+              <section>
+                <h2 className="text-xl font-bold text-gray-900 mb-4">Vehicle Photos</h2>
+                <ProfileGallery photos={photos} driverName={driver.displayName} />
+              </section>
+            )}
+
+            {/* Reviews placeholder — still honest, ships in Fase E */}
             <section className="space-y-3">
-              <ComingSoonNote
-                title="Vehicle gallery"
-                description="Drivers will be able to upload vehicle photos."
-              />
               <ComingSoonNote
                 title="Customer reviews"
                 description="Reviews from past customers will appear here."

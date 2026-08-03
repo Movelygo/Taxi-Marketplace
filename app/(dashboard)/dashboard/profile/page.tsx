@@ -2,9 +2,11 @@ import { getCurrentUser } from '@/modules/auth/actions/get-current-user'
 import { redirect } from 'next/navigation'
 import { DriverService } from '@/modules/drivers/services/driver.service'
 import { CityService } from '@/modules/cities/services/city.service'
+import { GalleryService } from '@/modules/gallery/services/gallery.service'
 import { getActiveProfileAttributes } from '@/modules/drivers/actions/get-profile-attributes'
 import { ProfileClient } from './page-client'
 import Link from 'next/link'
+import type { DriverPhoto } from '@prisma/client'
 
 export const metadata = {
   title: 'Edit Profile | Movely',
@@ -23,6 +25,13 @@ export default async function ProfilePage() {
   const profile = await DriverService.getProfile(user.id)
   const cities = await CityService.getAllActive()
   const { amenities, paymentMethods } = await getActiveProfileAttributes()
+
+  let photos: DriverPhoto[] = []
+  let photoLimit = 2
+  if (profile) {
+    photos = await GalleryService.getByDriverId(profile.id)
+    photoLimit = await GalleryService.getPhotoLimit()
+  }
 
   return (
     <div>
@@ -53,6 +62,8 @@ export default async function ProfilePage() {
           cities={cities}
           amenities={amenities}
           paymentMethods={paymentMethods}
+          photos={photos}
+          photoLimit={photoLimit}
         />
       </div>
     </div>
