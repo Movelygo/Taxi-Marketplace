@@ -8,15 +8,31 @@ export class DriverService {
     
     const slug = await this.generateUniqueSlug(input.displayName)
 
+    // Resolve cityId from city name (case-insensitive match)
+    let cityId: string | undefined
+    const cityRecord = await DriverRepository.findCityByName(input.city)
+    if (cityRecord) {
+      cityId = cityRecord.id
+    }
+
     return await DriverRepository.create({
       userId,
       slug,
       displayName: input.displayName,
       phone: input.phone,
       whatsappNumber: input.whatsappNumber,
+      cityId,
       city: input.city,
       serviceAreaText: input.serviceAreaText,
       vehicleType: input.vehicleType,
+      vehicleMake: input.vehicleMake,
+      vehicleModel: input.vehicleModel,
+      vehicleYear: input.vehicleYear,
+      vehicleColor: input.vehicleColor,
+      passengerCapacity: input.passengerCapacity,
+      amenities: input.amenities,
+      paymentMethods: input.paymentMethods,
+      operatingHours: input.operatingHours,
       languages,
       bio: input.bio,
       availabilityStatus: input.availabilityStatus as AvailabilityStatus,
@@ -29,9 +45,21 @@ export class DriverService {
     if (input.displayName !== undefined) updateData.displayName = input.displayName
     if (input.phone !== undefined) updateData.phone = input.phone
     if (input.whatsappNumber !== undefined) updateData.whatsappNumber = input.whatsappNumber
-    if (input.city !== undefined) updateData.city = input.city
+    if (input.city !== undefined) {
+      updateData.city = input.city
+      const cityRecord = await DriverRepository.findCityByName(input.city)
+      if (cityRecord) updateData.cityId = cityRecord.id
+    }
     if (input.serviceAreaText !== undefined) updateData.serviceAreaText = input.serviceAreaText
     if (input.vehicleType !== undefined) updateData.vehicleType = input.vehicleType
+    if (input.vehicleMake !== undefined) updateData.vehicleMake = input.vehicleMake || null
+    if (input.vehicleModel !== undefined) updateData.vehicleModel = input.vehicleModel || null
+    if (input.vehicleYear !== undefined) updateData.vehicleYear = input.vehicleYear ?? null
+    if (input.vehicleColor !== undefined) updateData.vehicleColor = input.vehicleColor || null
+    if (input.passengerCapacity !== undefined) updateData.passengerCapacity = input.passengerCapacity ?? null
+    if (input.amenities !== undefined) updateData.amenities = input.amenities
+    if (input.paymentMethods !== undefined) updateData.paymentMethods = input.paymentMethods
+    if (input.operatingHours !== undefined) updateData.operatingHours = input.operatingHours || null
     if (input.bio !== undefined) updateData.bio = input.bio
     if (input.availabilityStatus !== undefined) updateData.availabilityStatus = input.availabilityStatus as AvailabilityStatus
 

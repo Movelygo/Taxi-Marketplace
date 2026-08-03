@@ -1,6 +1,7 @@
 import { PrismaClient } from '@prisma/client'
 import { CONFIG_KEYS, DEFAULT_CONFIG } from '../modules/system-config/types'
 import { CITIES } from '../lib/constants/cities'
+import { DEFAULT_AMENITIES, DEFAULT_PAYMENT_METHODS } from '../modules/drivers/constants/profile-attributes'
 
 const prisma = new PrismaClient()
 
@@ -73,6 +74,30 @@ async function main() {
       console.log(`✅ Linked driver ${driver.displayName} → ${city.name}`)
     } else {
       console.log(`⚠️  Driver ${driver.displayName} has city "${driver.city}" with no match`)
+    }
+  }
+
+  // Seed profile attributes (amenities + payment methods)
+  console.log('🏷️  Seeding profile attributes...')
+  const allAttrs = [
+    ...DEFAULT_AMENITIES.map((a, i) => ({ ...a, category: 'AMENITY' as const, sortOrder: i })),
+    ...DEFAULT_PAYMENT_METHODS.map((p, i) => ({ ...p, category: 'PAYMENT_METHOD' as const, sortOrder: i })),
+  ]
+  for (const attr of allAttrs) {
+    const existing = await prisma.profileAttribute.findUnique({ where: { key: attr.key } })
+    if (!existing) {
+      await prisma.profileAttribute.create({
+        data: {
+          key: attr.key,
+          label: attr.label,
+          category: attr.category,
+          sortOrder: attr.sortOrder,
+          isActive: true,
+        },
+      })
+      console.log(`✅ Created ${attr.category.toLowerCase()}: ${attr.label}`)
+    } else {
+      console.log(`ℹ️  ${attr.category.toLowerCase()} already exists: ${attr.label}`)
     }
   }
 

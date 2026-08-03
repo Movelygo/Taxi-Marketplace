@@ -2,6 +2,7 @@ import { getCurrentUser } from '@/modules/auth/actions/get-current-user'
 import { redirect } from 'next/navigation'
 import { DriverService } from '@/modules/drivers/services/driver.service'
 import { CityService } from '@/modules/cities/services/city.service'
+import { getActiveProfileAttributes } from '@/modules/drivers/actions/get-profile-attributes'
 import { ProfileClient } from './page-client'
 import Link from 'next/link'
 
@@ -21,6 +22,7 @@ export default async function ProfilePage() {
 
   const profile = await DriverService.getProfile(user.id)
   const cities = await CityService.getAllActive()
+  const { amenities, paymentMethods } = await getActiveProfileAttributes()
 
   return (
     <div>
@@ -46,7 +48,12 @@ export default async function ProfilePage() {
           </p>
         </div>
 
-        <ProfileClient profile={profile} cities={cities} />
+        <ProfileClient
+          profile={profile}
+          cities={cities}
+          amenities={amenities}
+          paymentMethods={paymentMethods}
+        />
       </div>
     </div>
   )

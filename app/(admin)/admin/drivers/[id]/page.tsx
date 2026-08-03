@@ -133,8 +133,26 @@ export default async function AdminDriverDetailPage({ params }: PageProps) {
                     <p className="text-sm text-gray-900">{driver.city}</p>
                   </div>
                   <div>
-                    <p className="text-xs font-semibold text-gray-600 uppercase tracking-wide mb-1">Vehicle Type</p>
+                    <p className="text-xs font-semibold text-gray-600 uppercase tracking-wide mb-1">Vehicle Category</p>
                     <p className="text-sm text-gray-900">{driver.vehicleType}</p>
+                  </div>
+                  <div>
+                    <p className="text-xs font-semibold text-gray-600 uppercase tracking-wide mb-1">Vehicle</p>
+                    <p className="text-sm text-gray-900">
+                      {[driver.vehicleYear, driver.vehicleMake, driver.vehicleModel].filter(Boolean).join(' ') || '—'}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-xs font-semibold text-gray-600 uppercase tracking-wide mb-1">Color</p>
+                    <p className="text-sm text-gray-900">{driver.vehicleColor || '—'}</p>
+                  </div>
+                  <div>
+                    <p className="text-xs font-semibold text-gray-600 uppercase tracking-wide mb-1">Passenger Capacity</p>
+                    <p className="text-sm text-gray-900">{driver.passengerCapacity ?? '—'}</p>
+                  </div>
+                  <div>
+                    <p className="text-xs font-semibold text-gray-600 uppercase tracking-wide mb-1">Operating Hours</p>
+                    <p className="text-sm text-gray-900">{driver.operatingHours || '—'}</p>
                   </div>
                   <div className="md:col-span-2">
                     <p className="text-xs font-semibold text-gray-600 uppercase tracking-wide mb-1">Service Area</p>
@@ -144,6 +162,26 @@ export default async function AdminDriverDetailPage({ params }: PageProps) {
                     <p className="text-xs font-semibold text-gray-600 uppercase tracking-wide mb-1">Languages</p>
                     <p className="text-sm text-gray-900">{driver.languages.join(', ')}</p>
                   </div>
+                  {driver.amenities.length > 0 && (
+                    <div className="md:col-span-2">
+                      <p className="text-xs font-semibold text-gray-600 uppercase tracking-wide mb-1">Amenities</p>
+                      <div className="flex flex-wrap gap-1.5">
+                        {driver.amenities.map((a) => (
+                          <span key={a} className="px-2 py-1 bg-blue-50 text-blue-700 text-xs font-medium rounded-md">{a}</span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                  {driver.paymentMethods.length > 0 && (
+                    <div className="md:col-span-2">
+                      <p className="text-xs font-semibold text-gray-600 uppercase tracking-wide mb-1">Payment Methods</p>
+                      <div className="flex flex-wrap gap-1.5">
+                        {driver.paymentMethods.map((p) => (
+                          <span key={p} className="px-2 py-1 bg-green-50 text-green-700 text-xs font-medium rounded-md">{p}</span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>

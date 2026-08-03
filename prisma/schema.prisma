@@ -55,10 +55,18 @@ model Driver {
   phone              String
   whatsappNumber     String             @map("whatsapp_number")
   cityId             String?            @map("city_id")
-  city               String             // legacy free-text; kept for migration safety, will be removed after B1
+  city               String             // legacy free-text; kept for migration safety
   cityRel            City?              @relation(fields: [cityId], references: [id])
   serviceAreaText    String             @map("service_area_text") @db.Text
-  vehicleType        String             @map("vehicle_type")
+  vehicleType        String             @map("vehicle_type")        // category: Sedan / SUV-Minivan / Van / Luxury
+  vehicleMake        String?            @map("vehicle_make")
+  vehicleModel       String?            @map("vehicle_model")
+  vehicleYear        Int?               @map("vehicle_year")
+  vehicleColor       String?            @map("vehicle_color")
+  passengerCapacity  Int?               @map("passenger_capacity")
+  amenities          String[]           @default([])
+  paymentMethods     String[]           @default([])
+  operatingHours     String?            @map("operating_hours")
   languages          String[]
   bio                String?            @db.Text
   profileImageUrl    String?            @map("profile_image_url")
@@ -80,6 +88,27 @@ model Driver {
   @@index([slug])
   @@index([userId])
   @@map("drivers")
+}
+
+// Admin-managed catalog of amenities and payment methods
+// Lets admin add/remove filters without code changes
+model ProfileAttribute {
+  id        String              @id @default(uuid())
+  key       String              @unique
+  label     String
+  category  ProfileAttrCategory
+  isActive  Boolean             @default(true) @map("is_active")
+  sortOrder Int                 @default(0) @map("sort_order")
+  createdAt DateTime            @default(now()) @map("created_at")
+  updatedAt DateTime            @updatedAt @map("updated_at")
+
+  @@index([category, isActive, sortOrder])
+  @@map("profile_attributes")
+}
+
+enum ProfileAttrCategory {
+  AMENITY
+  PAYMENT_METHOD
 }
 
 enum DriverStatus {

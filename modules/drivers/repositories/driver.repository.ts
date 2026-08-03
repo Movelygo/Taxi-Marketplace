@@ -1,5 +1,5 @@
 import { prisma } from '@/lib/db/prisma'
-import type { Driver, AvailabilityStatus } from '@prisma/client'
+import type { Driver, AvailabilityStatus, City } from '@prisma/client'
 
 export class DriverRepository {
   static async create(data: {
@@ -8,9 +8,18 @@ export class DriverRepository {
     displayName: string
     phone: string
     whatsappNumber: string
+    cityId?: string
     city: string
     serviceAreaText: string
     vehicleType: string
+    vehicleMake?: string | null
+    vehicleModel?: string | null
+    vehicleYear?: number | null
+    vehicleColor?: string | null
+    passengerCapacity?: number | null
+    amenities?: string[]
+    paymentMethods?: string[]
+    operatingHours?: string | null
     languages: string[]
     bio?: string
     availabilityStatus: AvailabilityStatus
@@ -32,15 +41,30 @@ export class DriverRepository {
     })
   }
 
+  static async findCityByName(name: string): Promise<City | null> {
+    return await prisma.city.findFirst({
+      where: { name: { equals: name, mode: 'insensitive' } },
+    })
+  }
+
   static async update(
     userId: string,
     data: {
       displayName?: string
       phone?: string
       whatsappNumber?: string
+      cityId?: string
       city?: string
       serviceAreaText?: string
       vehicleType?: string
+      vehicleMake?: string | null
+      vehicleModel?: string | null
+      vehicleYear?: number | null
+      vehicleColor?: string | null
+      passengerCapacity?: number | null
+      amenities?: string[]
+      paymentMethods?: string[]
+      operatingHours?: string | null
       languages?: string[]
       bio?: string
       availabilityStatus?: AvailabilityStatus
@@ -81,7 +105,9 @@ export class DriverRepository {
     return await prisma.driver.findMany({
       where: {
         status: 'APPROVED',
-        ...(city ? { city } : {}),
+        ...(city
+          ? { OR: [{ city: { equals: city, mode: 'insensitive' } }, { cityRel: { name: { equals: city, mode: 'insensitive' } } }] }
+          : {}),
       },
       orderBy: [
         { isFeatured: 'desc' },

@@ -10,6 +10,14 @@ export interface CreateDriverInput {
   city: string
   serviceAreaText: string
   vehicleType: string
+  vehicleMake?: string
+  vehicleModel?: string
+  vehicleYear?: number
+  vehicleColor?: string
+  passengerCapacity?: number
+  amenities: string[]
+  paymentMethods: string[]
+  operatingHours?: string
   languages: string[]
   bio?: string
 }
@@ -21,6 +29,14 @@ export interface UpdateDriverInput {
   city?: string
   serviceAreaText?: string
   vehicleType?: string
+  vehicleMake?: string
+  vehicleModel?: string
+  vehicleYear?: number
+  vehicleColor?: string
+  passengerCapacity?: number
+  amenities?: string[]
+  paymentMethods?: string[]
+  operatingHours?: string
   languages?: string[]
   bio?: string
   profileImageUrl?: string
