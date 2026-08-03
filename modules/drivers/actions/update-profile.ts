@@ -24,6 +24,7 @@ type UpdateProfileState = {
     bio?: string[]
   } | string
   success?: boolean
+  message?: string
 } | undefined
 
 function getFormArray(formData: FormData, key: string): string[] {
@@ -106,7 +107,7 @@ export async function updateProfile(_prevState: UpdateProfileState, formData: Fo
     await DriverService.updateProfile(user.id, validated.data)
     revalidatePath('/dashboard')
     revalidatePath(`/drivers/${existingProfile.slug}`)
-    return { success: true }
+    return { success: true, message: 'Your profile has been updated successfully!' }
   } catch (error) {
     console.error('[updateProfile] Server error:', error)
     return { error: 'Failed to update profile. Please try again.' }

@@ -34,25 +34,25 @@ export default async function ProfilePage() {
   }
 
   return (
-    <div>
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8 sm:py-10">
+    <div className="min-h-screen bg-[#F8F9FA]">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-10 lg:py-14">
         <Link
           href="/dashboard"
-          className="inline-flex items-center gap-1.5 text-sm font-medium text-gray-600 hover:text-gray-900 transition-colors mb-5"
+          className="inline-flex items-center gap-1.5 text-xs font-black text-gray-400 hover:text-[#0B1F3D] transition-colors mb-8 group uppercase tracking-widest"
         >
-          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+          <svg className="w-4 h-4 group-hover:-translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M15 19l-7-7 7-7" />
           </svg>
           Back to overview
         </Link>
 
-        <div className="mb-8">
-          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">
-            {profile ? 'Edit your profile' : 'Create your profile'}
+        <div className="mb-10 lg:mb-14">
+          <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black text-gray-900 tracking-tight leading-tight">
+            {profile ? 'Edit business profile' : 'Create your profile'}
           </h1>
-          <p className="text-sm text-gray-600 mt-1">
+          <p className="text-lg font-medium text-gray-500 mt-2 max-w-2xl leading-relaxed">
             {profile
-              ? 'Update your driver information and manage your public profile.'
+              ? 'Update your driver information and manage your public presence.'
               : 'Set up your driver profile to start connecting with customers.'}
           </p>
         </div>

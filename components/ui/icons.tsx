@@ -26,7 +26,20 @@ import {
   ExternalLink,
   ChevronRight,
   User,
-  Info
+  Info,
+  Eye,
+  Users,
+  Zap,
+  Search,
+  Edit3,
+  ArrowRight,
+  Shield,
+  Mail,
+  Trash2,
+  Plus,
+  Loader2,
+  Upload,
+  ArrowLeft
 } from 'lucide-react'
 
 export const AMENITY_ICONS: Record<string, any> = {
@@ -66,5 +79,18 @@ export {
   ChevronRight,
   CheckCircle2,
   User,
-  Info
+  Info,
+  Eye,
+  Users,
+  Zap,
+  Search,
+  Edit3,
+  ArrowRight,
+  Shield,
+  Mail,
+  Trash2,
+  Plus,
+  Loader2,
+  Upload,
+  ArrowLeft
 }

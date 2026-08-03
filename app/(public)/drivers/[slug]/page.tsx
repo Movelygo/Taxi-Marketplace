@@ -173,9 +173,6 @@ export default async function DriverProfilePage({ params }: DriverProfilePagePro
                       Featured
                     </span>
                   )}
-                  <span className="px-3 py-1 bg-blue-50 text-blue-700 text-xs font-bold rounded-lg uppercase tracking-wider">
-                    Verified ID
-                  </span>
                 </div>
               </div>
             </div>

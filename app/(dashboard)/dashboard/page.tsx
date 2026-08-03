@@ -7,7 +7,19 @@ import { DriverMetrics } from '@/components/dashboard/driver-metrics'
 import { ProfileCompletenessCard } from '@/components/dashboard/profile-completeness-card'
 import { OnboardingCallout, type CalloutTone } from '@/components/dashboard/onboarding-callout'
 import { PageViewTracker } from '@/components/analytics/page-view-tracker'
-import { formatDriverStatus, formatAvailability } from '@/lib/format/driver'
+import { 
+  CheckCircle2, 
+  MapPin, 
+  User, 
+  Mail, 
+  Shield, 
+  Calendar, 
+  ArrowRight, 
+  Eye, 
+  Search, 
+  Edit3,
+  Car
+} from '@/components/ui/icons'
 import Link from 'next/link'
 import Image from 'next/image'
 import type { Driver } from '@prisma/client'
@@ -33,138 +45,285 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
   const callout = buildOnboardingCallout(profile, completeness?.percentage ?? 0)
 
   return (
-    <div>
+    <div className="min-h-screen bg-[#F8F9FA]">
       <PageViewTracker
         eventName="dashboard_viewed"
         properties={{ has_profile: !!profile, profile_status: profile?.status }}
       />
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8 sm:py-10 space-y-6">
-        {/* Compact greeting (shell header already has brand + nav + sign out) */}
-        <div>
-          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">
-            {profile ? `Welcome, ${profile.displayName.split(' ')[0]}` : 'Welcome to Movely'}
-          </h1>
-          <p className="text-sm text-gray-600 mt-1">
-            {profile
-              ? 'Manage your driver profile and see how customers find you.'
-              : 'Set up your driver profile to start connecting with customers.'}
-          </p>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-10 lg:py-14 space-y-8 lg:space-y-12">
+        {/* Header Section */}
+        <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-6">
+          <div className="space-y-1">
+            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black text-gray-900 tracking-tight leading-tight">
+              {profile ? `Hola, ${profile.displayName.split(' ')[0]}` : 'Welcome to Movely'}
+            </h1>
+            <p className="text-lg font-medium text-gray-500 max-w-2xl leading-relaxed">
+              {profile
+                ? 'Manage your business profile and track your growth on Movely.'
+                : 'Set up your driver profile to start connecting with customers in your area.'}
+            </p>
+          </div>
         </div>
 
         {/* Error Alert */}
         {params.error === 'unauthorized' && (
-          <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-            <p className="text-sm text-red-800">
-              You don&apos;t have permission to access the admin panel.
+          <div className="bg-red-50 border border-red-100 rounded-3xl p-6 flex items-center gap-4 text-red-800 shadow-sm">
+            <div className="w-10 h-10 rounded-2xl bg-red-100 flex items-center justify-center flex-shrink-0">
+              <Shield className="w-5 h-5 text-red-600" />
+            </div>
+            <p className="font-bold text-sm">
+              Acceso denegado: No tienes permisos para acceder al panel de administración.
             </p>
           </div>
         )}
 
-        {/* State-aware onboarding callout */}
-        {callout && <OnboardingCallout {...callout} />}
+        {/* Actionable Callouts Area */}
+        <div className="space-y-6">
+          {/* State-aware onboarding callout */}
+          {callout && <OnboardingCallout {...callout} />}
 
-        {/* Completeness card — only if profile exists and not yet 100% */}
-        {profile && completeness && !completeness.isComplete && (
-          <ProfileCompletenessCard completeness={completeness} />
-        )}
-
-        {/* Metrics — only if profile exists */}
-        {profile && metrics && (
-          <DriverMetrics
-            profileViews={metrics.profileViews}
-            totalLeads={metrics.totalLeads}
-            whatsappLeads={metrics.whatsappLeads}
-            callLeads={metrics.callLeads}
-          />
-        )}
-
-        {/* Profile + Account row */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Driver Profile Card */}
-          <div className="bg-white rounded-2xl border border-gray-200 shadow-sm">
-            <div className="p-6 border-b border-gray-200 flex items-center justify-between">
-              <h2 className="text-lg font-bold text-gray-900">Driver Profile</h2>
-              {completeness?.isComplete && (
-                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-green-50 text-green-700 text-[10px] font-bold uppercase tracking-wider">
-                  <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
-                  </svg>
-                  Complete
-                </span>
-              )}
-            </div>
-            <div className="p-6">
-              {profile ? (
-                <ProfileSummary profile={profile} />
-              ) : (
-                <NoProfileEmptyState />
-              )}
-            </div>
-          </div>
-
-          {/* Account Information Card */}
-          <div className="bg-white rounded-2xl border border-gray-200 shadow-sm">
-            <div className="p-6 border-b border-gray-200">
-              <h2 className="text-lg font-bold text-gray-900">Account</h2>
-            </div>
-            <div className="p-6 space-y-4">
-              <InfoRow label="Email" value={user.email} />
-              <InfoRow label="Role" value={user.role.charAt(0) + user.role.slice(1).toLowerCase()} />
-              <InfoRow
-                label="Member since"
-                value={new Date(user.createdAt).toLocaleDateString('en-US', {
-                  month: 'short',
-                  day: 'numeric',
-                  year: 'numeric',
-                })}
-                last
-              />
-            </div>
-          </div>
+          {/* Completeness card — only if profile exists and not yet 100% */}
+          {profile && completeness && !completeness.isComplete && (
+            <ProfileCompletenessCard completeness={completeness} />
+          )}
         </div>
 
-        {/* Quick Actions — consistent navy palette */}
-        <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6">
-          <h2 className="text-lg font-bold text-gray-900 mb-4">Quick actions</h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-            <QuickAction
-              href="/dashboard/profile"
-              title={profile ? 'Edit profile' : 'Create profile'}
-              description={profile ? 'Update your information' : 'Start your driver profile'}
-              icon={
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-              }
-            />
-            {profile && profile.status === 'APPROVED' && (
-              <QuickAction
-                href={`/drivers/${profile.slug}`}
-                title="View public profile"
-                description="See how customers see you"
-                icon={
-                  <>
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                  </>
-                }
-              />
-            )}
-            <QuickAction
-              href="/drivers"
-              title="Browse directory"
-              description="See other driver profiles"
-              icon={
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-              }
+        {/* Stats Strip */}
+        {profile && metrics && (
+          <div className="space-y-6">
+            <div className="flex items-center justify-between">
+              <h2 className="text-xs font-black text-gray-400 uppercase tracking-[0.2em]">Profile Performance</h2>
+            </div>
+            <DriverMetrics
+              profileViews={metrics.profileViews}
+              totalLeads={metrics.totalLeads}
+              whatsappLeads={metrics.whatsappLeads}
+              callLeads={metrics.callLeads}
             />
           </div>
+        )}
+
+        {/* Main Grid: Profile & Account */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+          
+          {/* Left: Driver Profile Summary */}
+          <div className="lg:col-span-8 flex flex-col">
+            <div className="bg-white rounded-[40px] border border-gray-100 shadow-sm overflow-hidden flex-1 flex flex-col">
+              <div className="px-8 py-6 border-b border-gray-50 flex items-center justify-between bg-gray-50/30">
+                <div className="flex items-center gap-2">
+                  <User className="w-4 h-4 text-[#0B1F3D]" />
+                  <h2 className="text-sm font-black text-[#0B1F3D] uppercase tracking-widest">Business Profile</h2>
+                </div>
+                {completeness?.isComplete && (
+                  <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-green-50 text-green-700 text-[10px] font-black uppercase tracking-wider border border-green-100">
+                    <CheckCircle2 className="w-3.5 h-3.5" />
+                    Complete
+                  </div>
+                )}
+              </div>
+              <div className="p-8 flex-1">
+                {profile ? (
+                  <ProfileSummary profile={profile} />
+                ) : (
+                  <NoProfileEmptyState />
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* Right: Account Info & Quick Actions */}
+          <div className="lg:col-span-4 space-y-8">
+            {/* Account Card */}
+            <div className="bg-white rounded-[40px] border border-gray-100 shadow-sm p-8">
+              <div className="flex items-center gap-2 mb-8">
+                <Shield className="w-4 h-4 text-gray-400" />
+                <h2 className="text-sm font-black text-gray-400 uppercase tracking-widest">Account</h2>
+              </div>
+              
+              <div className="space-y-6">
+                <AccountRow icon={Mail} label="Email Address" value={user.email} />
+                <AccountRow icon={Shield} label="Account Role" value={user.role === 'ADMIN' ? 'Administrator' : 'Verified Driver'} />
+                <AccountRow 
+                  icon={Calendar} 
+                  label="Member Since" 
+                  value={new Date(user.createdAt).toLocaleDateString('en-US', {
+                    month: 'long',
+                    year: 'numeric',
+                  })} 
+                />
+              </div>
+            </div>
+
+            {/* Quick Actions Card */}
+            <div className="bg-[#0B1F3D] rounded-[40px] p-8 text-white shadow-2xl relative overflow-hidden group">
+              <div className="absolute top-0 right-0 -mt-6 -mr-6 w-32 h-32 bg-white/5 rounded-full blur-3xl group-hover:bg-white/10 transition-colors" />
+              
+              <h2 className="text-xl font-bold mb-6 flex items-center gap-2">
+                Quick Actions
+              </h2>
+
+              <div className="space-y-4">
+                <QuickAction
+                  href="/dashboard/profile"
+                  title={profile ? 'Update profile' : 'Build profile'}
+                  icon={Edit3}
+                />
+                {profile && profile.status === 'APPROVED' && (
+                  <QuickAction
+                    href={`/drivers/${profile.slug}`}
+                    title="View as customer"
+                    icon={Eye}
+                  />
+                )}
+                <QuickAction
+                  href="/drivers"
+                  title="Browse directory"
+                  icon={Search}
+                />
+              </div>
+              
+              <div className="mt-8 pt-8 border-t border-white/10 flex items-center justify-between text-[10px] font-black text-white/30 tracking-[0.2em] uppercase">
+                <span>Movely Partner</span>
+                <span>v1.2</span>
+              </div>
+            </div>
+          </div>
+
         </div>
       </div>
     </div>
   )
 }
 
-// ---------- Helpers ----------
+// ---------- Internal Components ----------
+
+function AccountRow({ icon: Icon, label, value }: { icon: any, label: string, value: string }) {
+  return (
+    <div className="flex items-start gap-4">
+      <div className="p-2 rounded-xl bg-gray-50 text-gray-400">
+        <Icon className="w-4 h-4" />
+      </div>
+      <div>
+        <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest leading-none mb-1.5">{label}</p>
+        <p className="text-sm font-bold text-gray-900 truncate">{value}</p>
+      </div>
+    </div>
+  )
+}
+
+function QuickAction({ href, title, icon: Icon }: { href: string; title: string; icon: any }) {
+  return (
+    <Link
+      href={href}
+      className="flex items-center justify-between gap-4 p-4 rounded-2xl bg-white/5 border border-white/10 hover:bg-white/10 hover:border-white/20 transition-all group"
+    >
+      <div className="flex items-center gap-4">
+        <div className="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center flex-shrink-0">
+          <Icon className="w-5 h-5 text-amber-400" />
+        </div>
+        <span className="font-bold text-sm tracking-tight">{title}</span>
+      </div>
+      <ArrowRight className="w-4 h-4 text-white/30 group-hover:text-white group-hover:translate-x-1 transition-all" />
+    </Link>
+  )
+}
+
+function ProfileSummary({ profile }: { profile: Driver & { cityRel?: { name: string; state: string } | null } }) {
+  const statusColor = {
+    PENDING: 'bg-amber-50 text-amber-700 border-amber-100',
+    APPROVED: 'bg-green-50 text-green-700 border-green-100',
+    REJECTED: 'bg-red-50 text-red-700 border-red-100',
+    SUSPENDED: 'bg-gray-100 text-gray-700 border-gray-200',
+  }[profile.status]
+
+  return (
+    <div className="flex flex-col sm:flex-row items-center sm:items-start gap-10">
+      {/* Avatar & Status */}
+      <div className="flex flex-col items-center gap-4">
+        <div className="relative w-32 h-32 rounded-[32px] overflow-hidden border-4 border-white bg-white shadow-xl">
+          {profile.profileImageUrl ? (
+            <Image src={profile.profileImageUrl} alt={profile.displayName} fill className="object-cover" />
+          ) : (
+            <div className="w-full h-full flex items-center justify-center text-4xl text-[#0B1F3D] font-bold bg-gray-50">
+              {profile.displayName.charAt(0)}
+            </div>
+          )}
+        </div>
+        <div className={`px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest border ${statusColor}`}>
+          {profile.status}
+        </div>
+      </div>
+
+      {/* Primary Details */}
+      <div className="flex-1 min-w-0 space-y-6 text-center sm:text-left">
+        <div>
+          <h3 className="text-3xl font-black text-gray-900 tracking-tight mb-2">{profile.displayName}</h3>
+          <div className="flex flex-wrap justify-center sm:justify-start items-center gap-4 text-gray-500 font-bold text-sm">
+            <div className="flex items-center gap-2">
+              <MapPin className="w-4 h-4 text-gray-400" />
+              {profile.cityRel?.name || profile.city}
+            </div>
+            <div className="w-1.5 h-1.5 rounded-full bg-gray-200 hidden sm:block" />
+            <div className="flex items-center gap-2">
+              <Car className="w-4 h-4 text-gray-400" />
+              {profile.vehicleType}
+            </div>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-4 pt-6 border-t border-gray-50 text-sm">
+          <DetailRow label="Phone" value={profile.phone} />
+          <DetailRow label="WhatsApp" value={profile.whatsappNumber} />
+          <DetailRow label="Availability" value={profile.availabilityStatus === 'AVAILABLE' ? 'Online' : 'Offline'} />
+          <DetailRow label="Service Area" value={profile.serviceAreaText} truncate />
+        </div>
+        
+        <div className="pt-6">
+          <Link
+            href="/dashboard/profile"
+            className="inline-flex items-center gap-2 px-6 py-3 rounded-2xl bg-gray-100 text-[#0B1F3D] font-black text-sm hover:bg-gray-200 transition-all transform active:scale-95 shadow-sm"
+          >
+            Edit full profile
+            <ArrowRight className="w-4 h-4" />
+          </Link>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function DetailRow({ label, value, truncate = false }: { label: string; value: string | null; truncate?: boolean }) {
+  return (
+    <div>
+      <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest leading-none mb-1.5">{label}</p>
+      <p className={`font-bold text-gray-700 ${truncate ? 'truncate' : ''}`}>{value || '—'}</p>
+    </div>
+  )
+}
+
+function NoProfileEmptyState() {
+  return (
+    <div className="text-center py-10 space-y-6">
+      <div className="w-20 h-20 rounded-[32px] bg-amber-50 text-amber-500 flex items-center justify-center mx-auto shadow-sm">
+        <Car className="w-10 h-10" />
+      </div>
+      <div className="max-w-xs mx-auto">
+        <h3 className="text-xl font-bold text-gray-900 mb-2 tracking-tight">Profile needed</h3>
+        <p className="text-gray-500 font-medium">Create your profile to start receiving ride inquiries.</p>
+      </div>
+      <Link
+        href="/dashboard/profile"
+        className="inline-flex items-center gap-2 px-8 py-4 rounded-2xl bg-[#0B1F3D] text-white font-black text-sm hover:bg-[#001F3F] transition-all transform active:scale-95 shadow-xl shadow-[#0B1F3D]/20"
+      >
+        Start building profile
+        <ArrowRight className="w-4 h-4" />
+      </Link>
+    </div>
+  )
+}
+
+// ---------- Dashboard-specific build helpers ----------
 
 function buildOnboardingCallout(
   profile: Driver | null,
@@ -173,9 +332,9 @@ function buildOnboardingCallout(
   if (!profile) {
     return {
       tone: 'action',
-      eyebrow: 'Get started',
-      title: 'Create your driver profile',
-      description: 'Takes about 3 minutes. Once submitted, our team will review and approve your profile within 1–2 business days.',
+      eyebrow: 'Action Required',
+      title: 'Get started: Create your profile',
+      description: 'Your profile is how customers find and book you. It takes about 3 minutes to set up.',
       cta: { label: 'Start profile', href: '/dashboard/profile' },
     }
   }
@@ -183,9 +342,9 @@ function buildOnboardingCallout(
   if (profile.status === 'PENDING') {
     return {
       tone: 'pending',
-      eyebrow: 'Under review',
+      eyebrow: 'Status: Pending Review',
       title: 'Your profile is being reviewed',
-      description: 'Our team typically approves new profiles within 1–2 business days. You can still edit your profile while it\'s under review.',
+      description: 'Our team is reviewing your information. This typically takes 24-48 hours. You can still make edits while we review.',
       cta: { label: 'Edit while waiting', href: '/dashboard/profile' },
     }
   }
@@ -193,172 +352,22 @@ function buildOnboardingCallout(
   if (profile.status === 'REJECTED') {
     return {
       tone: 'pending',
-      eyebrow: 'Action needed',
-      title: 'Your profile was not approved',
-      description: 'Please contact support to learn what needs to be updated before resubmission.',
-      cta: { label: 'Contact support', href: '/contact' },
-    }
-  }
-
-  if (profile.status === 'SUSPENDED') {
-    return {
-      tone: 'pending',
-      eyebrow: 'Suspended',
-      title: 'Your profile is currently suspended',
-      description: 'Please contact support for details on how to restore your profile.',
-      cta: { label: 'Contact support', href: '/contact' },
-    }
-  }
-
-  // APPROVED states
-  if (profile.status === 'APPROVED' && !profile.profileImageUrl) {
-    return {
-      tone: 'action',
-      eyebrow: 'Next step',
-      title: 'Add your profile photo',
-      description: 'Profiles with a clear photo get significantly more customer contacts. This is the single most important thing you can do right now.',
-      cta: { label: 'Upload photo', href: '/dashboard/profile' },
+      eyebrow: 'Status: Action Needed',
+      title: 'Profile approval was unsuccessful',
+      description: 'Please review our guidelines and update your profile for resubmission.',
+      cta: { label: 'Fix profile', href: '/dashboard/profile' },
     }
   }
 
   if (profile.status === 'APPROVED' && percentage < 100) {
-    return null // The completeness card itself handles this — no need for a redundant callout
-  }
-
-  if (profile.status === 'APPROVED' && percentage === 100) {
     return {
-      tone: 'success',
-      eyebrow: 'You\'re all set',
-      title: 'Your profile is live and complete',
-      description: 'Customers can find you in the public directory. Share your profile link to attract more leads.',
-      cta: { label: 'View public profile', href: `/drivers/${profile.slug}` },
+      tone: 'info',
+      eyebrow: 'Optimization Tip',
+      title: 'Maximize your reach',
+      description: 'Complete your remaining profile sections to appear higher in search results and build more trust.',
+      cta: { label: 'Complete profile', href: '/dashboard/profile' },
     }
   }
 
   return null
-}
-
-function ProfileSummary({ profile }: { profile: Driver }) {
-  const statusInfo = formatDriverStatus(profile.status)
-  const availabilityInfo = formatAvailability(profile.availabilityStatus)
-
-  return (
-    <div className="space-y-5">
-      <div className="flex items-center gap-4">
-        <div className="relative w-16 h-16 rounded-full overflow-hidden border border-gray-200 flex-shrink-0 bg-[#0B1F3D]/5">
-          {profile.profileImageUrl ? (
-            <Image src={profile.profileImageUrl} alt={profile.displayName} fill className="object-cover" />
-          ) : (
-            <div className="w-full h-full flex items-center justify-center text-[#0B1F3D] font-bold text-lg">
-              {profile.displayName.charAt(0)}
-            </div>
-          )}
-        </div>
-        <div className="flex-1 min-w-0">
-          <h3 className="font-bold text-gray-900 truncate">{profile.displayName}</h3>
-          <p className="text-sm text-gray-600">{profile.city}</p>
-        </div>
-      </div>
-
-      <div className="grid grid-cols-2 gap-3">
-        <div className="bg-gray-50 rounded-lg p-3 border border-gray-200">
-          <p className="text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-1">Profile</p>
-          <p
-            className={`text-sm font-bold ${
-              statusInfo.tone === 'positive'
-                ? 'text-green-700'
-                : statusInfo.tone === 'pending'
-                  ? 'text-amber-700'
-                  : statusInfo.tone === 'negative'
-                    ? 'text-red-700'
-                    : 'text-gray-700'
-            }`}
-          >
-            {statusInfo.label}
-          </p>
-        </div>
-        <div className="bg-gray-50 rounded-lg p-3 border border-gray-200">
-          <p className="text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-1">Availability</p>
-          <p
-            className={`text-sm font-bold ${
-              availabilityInfo.tone === 'available'
-                ? 'text-green-700'
-                : availabilityInfo.tone === 'busy'
-                  ? 'text-amber-700'
-                  : 'text-gray-700'
-            }`}
-          >
-            {availabilityInfo.label}
-          </p>
-        </div>
-      </div>
-
-      <Link
-        href="/dashboard/profile"
-        className="block w-full px-4 py-2.5 bg-[#0B1F3D] text-white rounded-lg text-sm font-semibold text-center hover:bg-[#001F3F] transition-colors"
-      >
-        Edit profile
-      </Link>
-    </div>
-  )
-}
-
-function NoProfileEmptyState() {
-  return (
-    <div className="flex flex-col items-center justify-center py-8 text-center">
-      <div className="w-14 h-14 rounded-full bg-[#0B1F3D]/5 flex items-center justify-center mb-4">
-        <svg className="w-7 h-7 text-[#0B1F3D]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-        </svg>
-      </div>
-      <h3 className="text-base font-bold text-gray-900 mb-2">No profile yet</h3>
-      <p className="text-sm text-gray-600 mb-5 max-w-xs">
-        You&apos;ll need to add your name, vehicle, contact info, and service area. Takes about 3 minutes.
-      </p>
-      <Link
-        href="/dashboard/profile"
-        className="px-5 py-2.5 bg-[#0B1F3D] text-white rounded-lg text-sm font-semibold hover:bg-[#001F3F] transition-colors"
-      >
-        Create profile
-      </Link>
-    </div>
-  )
-}
-
-function InfoRow({ label, value, last = false }: { label: string; value: string; last?: boolean }) {
-  return (
-    <div className={`flex justify-between items-center py-3 ${last ? '' : 'border-b border-gray-100'}`}>
-      <span className="text-sm font-medium text-gray-600">{label}</span>
-      <span className="text-sm font-semibold text-gray-900">{value}</span>
-    </div>
-  )
-}
-
-function QuickAction({
-  href,
-  title,
-  description,
-  icon,
-}: {
-  href: string
-  title: string
-  description: string
-  icon: React.ReactNode
-}) {
-  return (
-    <Link
-      href={href}
-      className="flex items-center gap-3 p-4 rounded-xl border border-gray-200 hover:border-[#0B1F3D] hover:bg-gray-50 transition-all group"
-    >
-      <div className="w-10 h-10 rounded-lg bg-[#0B1F3D]/5 flex items-center justify-center group-hover:bg-[#0B1F3D]/10 transition-colors flex-shrink-0">
-        <svg className="w-5 h-5 text-[#0B1F3D]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          {icon}
-        </svg>
-      </div>
-      <div className="min-w-0">
-        <h3 className="font-semibold text-gray-900 text-sm">{title}</h3>
-        <p className="text-xs text-gray-600 truncate">{description}</p>
-      </div>
-    </Link>
-  )
 }

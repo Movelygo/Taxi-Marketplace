@@ -22,6 +22,8 @@ type CreateProfileState = {
     languages?: string[]
     bio?: string[]
   } | string
+  success?: boolean
+  message?: string
 } | undefined
 
 function getFormArray(formData: FormData, key: string): string[] {
