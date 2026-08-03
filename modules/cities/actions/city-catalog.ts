@@ -1,8 +1,9 @@
 'use server'
 
-import { getStatesOfCountry, getCitiesOfState } from '@countrystatecity/countries'
 import { prisma } from '@/lib/db/prisma'
 import type { City } from '@prisma/client'
+import usStatesData from '../data/us-states.json'
+import usCitiesData from '../data/us-cities.json'
 
 export interface StateOption {
   name: string
@@ -17,16 +18,20 @@ export interface CityWithStatus {
   dbCity: City | null
 }
 
+// Static data extracted from @countrystatecity/countries package at build time.
+// Reading from local JSON avoids dynamic import issues in serverless environments.
+const US_STATES: StateOption[] = usStatesData as StateOption[]
+
+type CityEntry = { name: string; lat: string; lng: string }
+type CitiesByState = Record<string, CityEntry[]>
+const US_CITIES: CitiesByState = usCitiesData as CitiesByState
+
 export async function getUSStates(): Promise<StateOption[]> {
-  const states = await getStatesOfCountry('US')
-  return states
-    .filter((s) => !s.name.startsWith('Armed Forces'))
-    .map((s) => ({ name: s.name, code: s.iso2 }))
-    .sort((a, b) => a.name.localeCompare(b.name))
+  return US_STATES
 }
 
 export async function getCitiesForState(stateCode: string): Promise<CityWithStatus[]> {
-  const packageCities = await getCitiesOfState('US', stateCode)
+  const packageCities = US_CITIES[stateCode] ?? []
 
   // Get all cities from DB that belong to this state
   const dbCities = await prisma.city.findMany({
@@ -45,8 +50,8 @@ export async function getCitiesForState(stateCode: string): Promise<CityWithStat
     return {
       name: pkgCity.name,
       stateCode,
-      latitude: pkgCity.latitude,
-      longitude: pkgCity.longitude,
+      latitude: pkgCity.lat,
+      longitude: pkgCity.lng,
       dbCity,
     }
   })
