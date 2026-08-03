@@ -17,14 +17,14 @@ export default async function AdminCitiesPage() {
         <div className="px-8 py-6">
           <h1 className="text-3xl font-bold text-gray-900">Cities</h1>
           <p className="text-gray-600 mt-1">
-            Manage the cities that drivers can select and customers can filter by.
+            Select a state to browse all available cities. Activate the ones where Movely operates.
             Inactive cities are hidden from the public site but existing drivers keep their assignment.
           </p>
         </div>
       </div>
 
       <div className="p-8">
-        <CityManager cities={cities} />
+        <CityManager initialCities={cities} defaultState="MD" />
       </div>
     </div>
   )
