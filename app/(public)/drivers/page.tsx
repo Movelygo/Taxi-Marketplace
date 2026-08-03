@@ -1,6 +1,4 @@
 import { DriverService } from '@/modules/drivers/services/driver.service'
-import { CityService } from '@/modules/cities/services/city.service'
-import { getActiveProfileAttributes } from '@/modules/drivers/actions/get-profile-attributes'
 import { PageViewTracker } from '@/components/analytics/page-view-tracker'
 import { DirectoryClient } from '@/components/public/directory-client'
 import type { FilterState } from '@/components/public/directory-filters'
@@ -44,9 +42,10 @@ export default async function DriversPage({ searchParams }: DriversPageProps) {
     sort,
   }
 
-  // Fetch initial data server-side
-  const [searchResult, cities, attrs] = await Promise.all([
-    DriverService.searchPublicDrivers({
+  // Fetch all directory data in a single consolidated call
+  // (uses one Prisma client, minimizes concurrent DB connections)
+  const { searchResult, cities, amenities: amenityAttrs, paymentMethods: paymentAttrs } =
+    await DriverService.getDirectoryData({
       q: q || undefined,
       city: city || undefined,
       vehicleType: vehicleType || undefined,
@@ -57,10 +56,7 @@ export default async function DriversPage({ searchParams }: DriversPageProps) {
       sort,
       page,
       pageSize: 12,
-    }),
-    CityService.getAllActive(),
-    getActiveProfileAttributes(),
-  ])
+    })
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -89,8 +85,8 @@ export default async function DriversPage({ searchParams }: DriversPageProps) {
       <Suspense fallback={<div className="max-w-7xl mx-auto px-6 py-12"><div className="animate-pulse text-gray-400">Loading directory...</div></div>}>
         <DirectoryClient
           cities={cities}
-          amenities={attrs.amenities}
-          paymentMethods={attrs.paymentMethods}
+          amenities={amenityAttrs}
+          paymentMethods={paymentAttrs}
           initialDrivers={searchResult.drivers}
           initialTotal={searchResult.total}
           initialPage={searchResult.page}

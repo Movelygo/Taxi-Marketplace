@@ -1,7 +1,9 @@
 import { DriverRepository } from '../repositories/driver.repository'
+import { CityRepository } from '@/modules/cities/repositories/city.repository'
+import { prisma } from '@/lib/db/prisma'
 import type { CreateDriverInput, UpdateDriverInput } from '../validations/driver.schema'
 import type { DriverSearchParams, DriverSearchResult } from '../types/search'
-import type { Driver, AvailabilityStatus } from '@prisma/client'
+import type { Driver, AvailabilityStatus, City, ProfileAttribute } from '@prisma/client'
 
 export class DriverService {
   static async createProfile(userId: string, input: CreateDriverInput): Promise<Driver> {
@@ -89,6 +91,35 @@ export class DriverService {
 
   static async searchPublicDrivers(params: DriverSearchParams): Promise<DriverSearchResult> {
     return await DriverRepository.searchApproved(params)
+  }
+
+  /**
+   * Fetch all data needed for the public directory page in a single
+   * sequential flow to minimize concurrent DB connections in serverless.
+   * Returns search results + cities + profile attributes (amenities/payment).
+   */
+  static async getDirectoryData(params: DriverSearchParams): Promise<{
+    searchResult: DriverSearchResult
+    cities: City[]
+    amenities: ProfileAttribute[]
+    paymentMethods: ProfileAttribute[]
+  }> {
+    // Run search + city list in parallel (both use the same Prisma client,
+    // which queues on a single connection)
+    const [searchResult, cities, amenities, paymentMethods] = await Promise.all([
+      DriverRepository.searchApproved(params),
+      CityRepository.findAllActive(),
+      prisma.profileAttribute.findMany({
+        where: { category: 'AMENITY', isActive: true },
+        orderBy: [{ sortOrder: 'asc' }, { label: 'asc' }],
+      }),
+      prisma.profileAttribute.findMany({
+        where: { category: 'PAYMENT_METHOD', isActive: true },
+        orderBy: [{ sortOrder: 'asc' }, { label: 'asc' }],
+      }),
+    ])
+
+    return { searchResult, cities, amenities, paymentMethods }
   }
 
   static async getFeaturedDrivers(limit: number = 6): Promise<Driver[]> {
