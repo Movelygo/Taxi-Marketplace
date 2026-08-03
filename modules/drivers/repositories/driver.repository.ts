@@ -4,6 +4,58 @@ import type { Prisma } from '@prisma/client'
 import type { DriverSearchParams, DriverSearchResult } from '../types/search'
 import { DEFAULT_PAGE_SIZE } from '../types/search'
 
+export function buildDriverSearchWhere(params: DriverSearchParams): Prisma.DriverWhereInput {
+  // Build the where clause
+  const where: Prisma.DriverWhereInput = { status: 'APPROVED' }
+  const and: Prisma.DriverWhereInput[] = []
+
+  // Text search — ILIKE on multiple fields
+  if (params.q?.trim()) {
+    const term = params.q.trim()
+    and.push({
+      OR: [
+        { displayName: { contains: term, mode: 'insensitive' } },
+        { vehicleMake: { contains: term, mode: 'insensitive' } },
+        { vehicleModel: { contains: term, mode: 'insensitive' } },
+        { vehicleType: { contains: term, mode: 'insensitive' } },
+        { serviceAreaText: { contains: term, mode: 'insensitive' } },
+        { bio: { contains: term, mode: 'insensitive' } },
+        { city: { contains: term, mode: 'insensitive' } },
+        { cityRel: { name: { contains: term, mode: 'insensitive' } } },
+      ],
+    })
+  }
+
+  // City filter (matches free-text city OR cityRel.name)
+  if (params.city) {
+    and.push({
+      OR: [
+        { city: { equals: params.city, mode: 'insensitive' } },
+        { cityRel: { name: { equals: params.city, mode: 'insensitive' } } },
+      ],
+    })
+  }
+
+  if (and.length > 0) where.AND = and
+
+  // Vehicle type filter
+  if (params.vehicleType) where.vehicleType = { equals: params.vehicleType, mode: 'insensitive' }
+
+  // Amenities — array overlap (driver has at least one of the selected)
+  if (params.amenities?.length) where.amenities = { hasSome: params.amenities }
+
+  // Payment methods — array overlap
+  if (params.paymentMethods?.length) where.paymentMethods = { hasSome: params.paymentMethods }
+
+  // Minimum passenger capacity
+  if (params.minCapacity !== undefined) where.passengerCapacity = { gte: params.minCapacity }
+
+  // Availability status
+  if (params.availabilityStatus) where.availabilityStatus = params.availabilityStatus
+
+  return where
+}
+
 export class DriverRepository {
   static async create(data: {
     userId: string
@@ -154,71 +206,12 @@ export class DriverRepository {
    */
   static async searchApproved(params: DriverSearchParams): Promise<DriverSearchResult> {
     const {
-      q,
-      city,
-      vehicleType,
-      amenities,
-      paymentMethods,
-      minCapacity,
-      availabilityStatus,
       sort = 'featured',
       page = 1,
       pageSize = DEFAULT_PAGE_SIZE,
     } = params
 
-    // Build the where clause
-    const where: Prisma.DriverWhereInput = {
-      status: 'APPROVED',
-    }
-
-    // Text search — ILIKE on multiple fields
-    if (q && q.trim()) {
-      const term = q.trim()
-      where.OR = [
-        { displayName: { contains: term, mode: 'insensitive' } },
-        { vehicleMake: { contains: term, mode: 'insensitive' } },
-        { vehicleModel: { contains: term, mode: 'insensitive' } },
-        { vehicleType: { contains: term, mode: 'insensitive' } },
-        { serviceAreaText: { contains: term, mode: 'insensitive' } },
-        { bio: { contains: term, mode: 'insensitive' } },
-        { city: { contains: term, mode: 'insensitive' } },
-        { cityRel: { name: { contains: term, mode: 'insensitive' } } },
-      ]
-    }
-
-    // City filter (matches free-text city OR cityRel.name)
-    if (city) {
-      where.OR = [
-        ...(where.OR ?? []),
-        { city: { equals: city, mode: 'insensitive' } },
-        { cityRel: { name: { equals: city, mode: 'insensitive' } } },
-      ]
-    }
-
-    // Vehicle type filter
-    if (vehicleType) {
-      where.vehicleType = { equals: vehicleType, mode: 'insensitive' }
-    }
-
-    // Amenities — array overlap (driver has at least one of the selected)
-    if (amenities && amenities.length > 0) {
-      where.amenities = { hasSome: amenities }
-    }
-
-    // Payment methods — array overlap
-    if (paymentMethods && paymentMethods.length > 0) {
-      where.paymentMethods = { hasSome: paymentMethods }
-    }
-
-    // Minimum passenger capacity
-    if (minCapacity) {
-      where.passengerCapacity = { gte: minCapacity }
-    }
-
-    // Availability status
-    if (availabilityStatus) {
-      where.availabilityStatus = availabilityStatus as AvailabilityStatus
-    }
+    const where = buildDriverSearchWhere(params)
 
     // Sorting
     const orderBy: Prisma.DriverOrderByWithRelationInput[] =
@@ -231,45 +224,45 @@ export class DriverRepository {
           ]
 
     // Pagination
-    const skip = (page - 1) * pageSize
+    const total = await prisma.driver.count({ where })
+    const totalPages = Math.ceil(total / pageSize)
+    const currentPage = totalPages === 0 ? 1 : Math.min(page, totalPages)
+    const skip = (currentPage - 1) * pageSize
     const take = pageSize
 
-    // Run count and data in parallel
-    const [drivers, total] = await Promise.all([
-      prisma.driver.findMany({
-        where,
-        orderBy,
-        skip,
-        take,
-        select: {
-          id: true,
-          slug: true,
-          displayName: true,
-          city: true,
-          vehicleType: true,
-          vehicleMake: true,
-          vehicleModel: true,
-          passengerCapacity: true,
-          languages: true,
-          amenities: true,
-          availabilityStatus: true,
-          profileImageUrl: true,
-          whatsappNumber: true,
-          phone: true,
-          isFeatured: true,
-          bio: true,
-          cityRel: { select: { name: true, state: true } },
-        },
-      }),
-      prisma.driver.count({ where }),
-    ])
+    // Run count before data so out-of-range pages can be clamped
+    const drivers = await prisma.driver.findMany({
+      where,
+      orderBy,
+      skip,
+      take,
+      select: {
+        id: true,
+        slug: true,
+        displayName: true,
+        city: true,
+        vehicleType: true,
+        vehicleMake: true,
+        vehicleModel: true,
+        passengerCapacity: true,
+        languages: true,
+        amenities: true,
+        availabilityStatus: true,
+        profileImageUrl: true,
+        whatsappNumber: true,
+        phone: true,
+        isFeatured: true,
+        bio: true,
+        cityRel: { select: { name: true, state: true } },
+      },
+    })
 
     return {
       drivers,
       total,
-      page,
+      page: currentPage,
       pageSize,
-      totalPages: Math.ceil(total / pageSize),
+      totalPages,
     }
   }
 }

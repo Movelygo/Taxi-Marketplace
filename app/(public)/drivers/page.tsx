@@ -2,6 +2,7 @@ import { DriverService } from '@/modules/drivers/services/driver.service'
 import { PageViewTracker } from '@/components/analytics/page-view-tracker'
 import { DirectoryClient } from '@/components/public/directory-client'
 import type { FilterState } from '@/components/public/directory-filters'
+import { driverSearchQuerySchema } from '@/modules/drivers/validations/driver-search.schema'
 import { Suspense } from 'react'
 
 export const metadata = {
@@ -19,42 +20,25 @@ export default async function DriversPage({ searchParams }: DriversPageProps) {
   const params = await searchParams
 
   // Parse filters from URL
-  const q = (params.q as string) || ''
-  const city = (params.city as string) || ''
-  const vehicleType = (params.vehicleType as string) || ''
-  const amenitiesParam = params.amenities
-  const amenities = Array.isArray(amenitiesParam) ? amenitiesParam : amenitiesParam ? [amenitiesParam] : []
-  const paymentMethodsParam = params.paymentMethods
-  const paymentMethods = Array.isArray(paymentMethodsParam) ? paymentMethodsParam : paymentMethodsParam ? [paymentMethodsParam] : []
-  const minCapacity = (params.minCapacity as string) || ''
-  const availabilityStatus = (params.availabilityStatus as string) || ''
-  const sort = (params.sort as 'featured' | 'newest') || 'featured'
-  const page = Math.max(1, parseInt((params.page as string) || '1', 10))
+  const parsed = driverSearchQuerySchema.safeParse(params)
+  const query = parsed.success ? parsed.data : driverSearchQuerySchema.parse({})
 
   const filters: FilterState = {
-    q,
-    city,
-    vehicleType,
-    amenities,
-    paymentMethods,
-    minCapacity,
-    availabilityStatus,
-    sort,
+    q: query.q || '',
+    city: query.city || '',
+    vehicleType: query.vehicleType || '',
+    amenities: query.amenities,
+    paymentMethods: query.paymentMethods,
+    minCapacity: query.minCapacity ? String(query.minCapacity) : '',
+    availabilityStatus: query.availabilityStatus || '',
+    sort: query.sort,
   }
 
   // Fetch all directory data in a single consolidated call
   // (uses one Prisma client, minimizes concurrent DB connections)
   const { searchResult, cities, amenities: amenityAttrs, paymentMethods: paymentAttrs } =
     await DriverService.getDirectoryData({
-      q: q || undefined,
-      city: city || undefined,
-      vehicleType: vehicleType || undefined,
-      amenities: amenities.length > 0 ? amenities : undefined,
-      paymentMethods: paymentMethods.length > 0 ? paymentMethods : undefined,
-      minCapacity: minCapacity ? parseInt(minCapacity, 10) : undefined,
-      availabilityStatus: availabilityStatus || undefined,
-      sort,
-      page,
+      ...query,
       pageSize: 12,
     })
 
@@ -63,9 +47,9 @@ export default async function DriversPage({ searchParams }: DriversPageProps) {
       <PageViewTracker
         eventName="public_directory_viewed"
         properties={{
-          city: city || 'all',
+          city: filters.city || 'all',
           driver_count: searchResult.total,
-          has_search: !!q,
+          has_search: !!filters.q,
           filter_count: Object.values(filters).filter((v) => (Array.isArray(v) ? v.length > 0 : !!v)).length,
         }}
       />
@@ -92,7 +76,6 @@ export default async function DriversPage({ searchParams }: DriversPageProps) {
           initialPage={searchResult.page}
           initialPageSize={searchResult.pageSize}
           initialFilters={filters}
-          searchParamsObj={params}
         />
       </Suspense>
     </div>

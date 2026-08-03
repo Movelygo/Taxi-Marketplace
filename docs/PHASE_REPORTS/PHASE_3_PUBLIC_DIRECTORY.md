@@ -395,6 +395,23 @@ The implementation maintains the established architecture:
 - Mobile-first responsive design
 - Clean, minimal UI
 
+---
+
+## 19. Phase C Search Upgrade & Stability Audit (2026-08-03)
+
+The original Phase 3 directory was upgraded during Roadmap Phase C with text search, structured filters, sorting, pagination, richer cards, mobile filters, and loading skeletons. A follow-up stability audit fixed the following production issues:
+
+- Filter changes did not fetch because the initial-render guard depended on the request counter, which remained zero until a request ran.
+- Rapid changes could leave stale requests active; requests now use `AbortController` plus a latest-request ID.
+- Pagination used the initial server URL parameters after filters changed; it now operates on the live filter state.
+- Text and city predicates were merged into one `OR`; they now use separate `AND` groups.
+- Search parameters were unvalidated; the API now applies Zod limits and returns structured `400` responses.
+- Transient API failures previously appeared as zero results; the UI preserves existing results and provides retry feedback.
+- Server-render failures now use a route-specific error boundary and are captured by Sentry.
+- Prisma was connecting to Supabase session mode on port 5432. Runtime connections now normalize to transaction mode on port 6543 with `pgbouncer=true`, `connection_limit=1`, and bounded query concurrency.
+
+Regression coverage was added with Node's test runner through `npm test`. The suite verifies parameter normalization/rejection, combined search semantics, structured Prisma predicates, and Supabase pooler URL normalization.
+
 All public pages respect the approval workflow - only APPROVED drivers are visible to the public.
 
 **Status:** ✅ Phase 3 Complete and Ready for Approval

@@ -1,3 +1,5 @@
+import type { AvailabilityStatus } from '@prisma/client'
+
 export interface DriverSearchParams {
   q?: string
   city?: string
@@ -5,7 +7,7 @@ export interface DriverSearchParams {
   amenities?: string[]
   paymentMethods?: string[]
   minCapacity?: number
-  availabilityStatus?: string
+  availabilityStatus?: AvailabilityStatus
   sort?: 'featured' | 'newest'
   page?: number
   pageSize?: number

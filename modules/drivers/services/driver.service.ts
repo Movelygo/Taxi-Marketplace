@@ -104,20 +104,15 @@ export class DriverService {
     amenities: ProfileAttribute[]
     paymentMethods: ProfileAttribute[]
   }> {
-    // Run search + city list in parallel (both use the same Prisma client,
-    // which queues on a single connection)
-    const [searchResult, cities, amenities, paymentMethods] = await Promise.all([
-      DriverRepository.searchApproved(params),
-      CityRepository.findAllActive(),
-      prisma.profileAttribute.findMany({
-        where: { category: 'AMENITY', isActive: true },
-        orderBy: [{ sortOrder: 'asc' }, { label: 'asc' }],
-      }),
-      prisma.profileAttribute.findMany({
-        where: { category: 'PAYMENT_METHOD', isActive: true },
-        orderBy: [{ sortOrder: 'asc' }, { label: 'asc' }],
-      }),
-    ])
+    // Run directory queries sequentially to keep serverless connection usage bounded
+    const searchResult = await DriverRepository.searchApproved(params)
+    const cities = await CityRepository.findAllActive()
+    const attributes = await prisma.profileAttribute.findMany({
+      where: { isActive: true },
+      orderBy: [{ sortOrder: 'asc' }, { label: 'asc' }],
+    })
+    const amenities = attributes.filter((attribute) => attribute.category === 'AMENITY')
+    const paymentMethods = attributes.filter((attribute) => attribute.category === 'PAYMENT_METHOD')
 
     return { searchResult, cities, amenities, paymentMethods }
   }

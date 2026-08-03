@@ -92,8 +92,11 @@ export function SearchableSelect({
 
   function handleOpen() {
     if (disabled) return
-    setIsOpen(true)
-    setQuery('')
+    if (!isOpen) {
+      setIsOpen(true)
+      setQuery('')
+      setHighlightedIndex(-1)
+    }
     setTimeout(() => inputRef.current?.focus(), 0)
   }
 
@@ -164,7 +167,7 @@ export function SearchableSelect({
           value={displayText}
           onChange={(e) => {
             setQuery(e.target.value)
-            setHighlightedIndex(filtered.length > 0 ? 0 : -1)
+            setHighlightedIndex(0)
           }}
           onFocus={() => setIsOpen(true)}
           placeholder={selectedOption ? `${selectedOption.label}${selectedOption.sublabel ? `, ${selectedOption.sublabel}` : ''}` : placeholder}

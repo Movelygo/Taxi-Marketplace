@@ -5,7 +5,7 @@ import { DirectoryFilters, type FilterState } from './directory-filters'
 import { DriverCard } from './driver-card'
 import { DriverGridSkeleton } from './driver-card-skeleton'
 import { Pagination } from './pagination'
-import type { DriverSearchResultItem } from '@/modules/drivers/types/search'
+import type { DriverSearchResult, DriverSearchResultItem } from '@/modules/drivers/types/search'
 import type { City, ProfileAttribute } from '@prisma/client'
 import Link from 'next/link'
 
@@ -18,7 +18,6 @@ interface DirectoryClientProps {
   initialPage: number
   initialPageSize: number
   initialFilters: FilterState
-  searchParamsObj: Record<string, string | string[] | undefined>
 }
 
 const EMPTY_FILTERS: FilterState = {
@@ -55,54 +54,68 @@ export function DirectoryClient({
   initialPage,
   initialPageSize,
   initialFilters,
-  searchParamsObj,
 }: DirectoryClientProps) {
   const [filters, setFilters] = useState<FilterState>(initialFilters)
   const [drivers, setDrivers] = useState<DriverSearchResultItem[]>(initialDrivers)
   const [total, setTotal] = useState(initialTotal)
   const [page, setPage] = useState(initialPage)
+  const [pageSize, setPageSize] = useState(initialPageSize)
   const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
   const [showMobileFilters, setShowMobileFilters] = useState(false)
 
   // Ref to track the latest fetch request and cancel stale ones
   const fetchIdRef = useRef(0)
+  const abortControllerRef = useRef<AbortController | null>(null)
+  const isInitialRenderRef = useRef(true)
 
-  const totalPages = Math.ceil(total / initialPageSize)
+  const totalPages = Math.ceil(total / pageSize)
 
   // Single fetch function — called on filter/page change
   const fetchDrivers = useCallback(
     async (currentFilters: FilterState, currentPage: number) => {
       // Increment fetch ID to invalidate any in-flight requests
       const fetchId = ++fetchIdRef.current
+      abortControllerRef.current?.abort()
+      const controller = new AbortController()
+      abortControllerRef.current = controller
       setLoading(true)
+      setError(null)
 
       const params = filtersToParams(currentFilters, currentPage)
-
-      try {
-        const res = await fetch(`/api/drivers/search?${params.toString()}`)
-        if (!res.ok) throw new Error('Search failed')
-        const data = await res.json()
-
-        // Only apply results if this is still the latest fetch
-        if (fetchId === fetchIdRef.current) {
-          setDrivers(data.drivers || [])
-          setTotal(data.total || 0)
-        }
-      } catch {
-        if (fetchId === fetchIdRef.current) {
-          setDrivers([])
-          setTotal(0)
-        }
-      } finally {
-        if (fetchId === fetchIdRef.current) {
-          setLoading(false)
-        }
-      }
 
       // Update URL silently for shareability (no navigation, no re-render)
       const qs = params.toString()
       const newUrl = qs ? `/drivers?${qs}` : '/drivers'
-      window.history.replaceState(null, '', newUrl)
+      window.history.replaceState(window.history.state, '', newUrl)
+
+      try {
+        const res = await fetch(`/api/drivers/search?${params.toString()}`, {
+          cache: 'no-store',
+          signal: controller.signal,
+        })
+        const data = await res.json().catch(() => null)
+        if (!res.ok) throw new Error(data?.error || 'Search is temporarily unavailable. Please try again.')
+        if (!data || !Array.isArray(data.drivers)) throw new Error('Search returned an invalid response.')
+
+        // Only apply results if this is still the latest fetch
+        if (fetchId === fetchIdRef.current) {
+          const result = data as DriverSearchResult
+          setDrivers(result.drivers)
+          setTotal(result.total)
+          setPage(result.page)
+          setPageSize(result.pageSize)
+        }
+      } catch (fetchError) {
+        if (fetchId === fetchIdRef.current && !controller.signal.aborted) {
+          setError(fetchError instanceof Error ? fetchError.message : 'Search failed')
+        }
+      } finally {
+        if (fetchId === fetchIdRef.current) {
+          abortControllerRef.current = null
+          setLoading(false)
+        }
+      }
     },
     [],
   )
@@ -110,7 +123,10 @@ export function DirectoryClient({
   // Debounced fetch when filters change (NOT page — page changes fetch immediately)
   useEffect(() => {
     // Skip the initial mount — data already comes from server
-    if (fetchIdRef.current === 0) return
+    if (isInitialRenderRef.current) {
+      isInitialRenderRef.current = false
+      return
+    }
 
     const handler = setTimeout(() => {
       fetchDrivers(filters, 1)
@@ -119,18 +135,29 @@ export function DirectoryClient({
     return () => clearTimeout(handler)
   }, [filters, fetchDrivers])
 
+  useEffect(() => () => abortControllerRef.current?.abort(), [])
+
   // Handle filter changes — always reset to page 1
   const handleFiltersChange = useCallback((newFilters: FilterState) => {
+    abortControllerRef.current?.abort()
+    abortControllerRef.current = null
+    fetchIdRef.current += 1
+    setError(null)
+    setLoading(false)
     setFilters(newFilters)
     setPage(1)
   }, [])
 
   // Handle reset
   const handleReset = useCallback(() => {
-    setFilters(EMPTY_FILTERS)
-    setPage(1)
-    fetchDrivers(EMPTY_FILTERS, 1)
-  }, [fetchDrivers])
+    handleFiltersChange(EMPTY_FILTERS)
+  }, [handleFiltersChange])
+
+  const handlePageChange = useCallback((nextPage: number) => {
+    setPage(nextPage)
+    fetchDrivers(filters, nextPage)
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  }, [fetchDrivers, filters])
 
   const activeFilterCount =
     (filters.q ? 1 : 0) +
@@ -214,9 +241,34 @@ export function DirectoryClient({
             </p>
           </div>
 
+          {error && drivers.length > 0 && (
+            <div className="mb-4 flex items-center justify-between gap-3 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
+              <span>{error} Showing the previous results.</span>
+              <button
+                type="button"
+                onClick={() => fetchDrivers(filters, page)}
+                className="font-semibold underline underline-offset-2"
+              >
+                Retry
+              </button>
+            </div>
+          )}
+
           {/* Results */}
           {loading ? (
             <DriverGridSkeleton count={6} />
+          ) : error && drivers.length === 0 ? (
+            <div className="bg-white rounded-xl border border-red-200 p-12 text-center">
+              <h3 className="text-xl font-bold text-gray-900 mb-2">Search temporarily unavailable</h3>
+              <p className="text-gray-600 mb-4">{error}</p>
+              <button
+                type="button"
+                onClick={() => fetchDrivers(filters, page)}
+                className="inline-flex items-center px-4 py-2 bg-[#0B1F3D] text-white rounded-lg text-sm font-semibold hover:bg-[#001F3F]"
+              >
+                Try again
+              </button>
+            </div>
           ) : drivers.length === 0 ? (
             <div className="bg-white rounded-xl border border-gray-200 p-16 text-center">
               <div className="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center mx-auto mb-4">
@@ -268,8 +320,8 @@ export function DirectoryClient({
               <Pagination
                 currentPage={page}
                 totalPages={totalPages}
-                basePath="/drivers"
-                searchParams={searchParamsObj}
+                onPageChange={handlePageChange}
+                disabled={loading}
               />
             </>
           )}

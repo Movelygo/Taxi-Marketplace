@@ -6,6 +6,30 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ---
 
+## [Phase C Stability Audit] - 2026-08-03
+
+### Fixed
+
+- Fixed the `/drivers` filter lifecycle: changing search text, city, vehicle, availability, capacity, amenities, payment methods, or sort now triggers a debounced request after the server-rendered initial load.
+- Added request cancellation and stale-response protection so rapid filter changes cannot overwrite newer results or leave the directory stuck in a loading state.
+- Reworked pagination to use the current client-side filters instead of stale initial URL parameters; out-of-range pages are clamped to the last valid page.
+- Corrected combined text + city filtering from a broad `OR` to `AND` between filter groups.
+- Added Zod validation and limits for all public search parameters; malformed requests now return a structured `400` instead of reaching Prisma.
+- Added explicit API `503` responses, Sentry capture, retry UI, and a `/drivers` segment error boundary for transient database failures.
+- Preserved previous driver results when a refresh fails instead of misleadingly showing zero drivers.
+- Configured Prisma runtime connections to use the Supabase transaction pooler (`6543`, `pgbouncer=true`, `connection_limit=1`) and serialized directory queries to prevent serverless connection exhaustion.
+- Fixed the searchable select clearing typed text when the open input was clicked again.
+
+### Verified
+
+- `npm test` — 7 regression tests passing.
+- `npx tsc --noEmit` — clean.
+- `npm run lint` — clean.
+- `npm run build` — successful production build.
+- Production-local smoke test — combined filters, invalid query handling, page clamping, 20 concurrent searches, and `/drivers` all passed.
+
+---
+
 ## [Phase 12] - 2026-08-02
 
 ### Fase A — Close Operational MVP + Admin Settings Foundation

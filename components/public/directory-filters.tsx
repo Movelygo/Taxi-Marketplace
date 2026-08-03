@@ -82,7 +82,6 @@ export function DirectoryFilters({
         <SearchableSelect
           name="filter-city"
           value={currentFilters.city}
-          defaultValue={currentFilters.city}
           placeholder="All cities"
           options={[
             { value: '', label: 'All cities' },
