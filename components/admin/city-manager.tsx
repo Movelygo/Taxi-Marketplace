@@ -2,7 +2,6 @@
 
 import { useState, useTransition, useMemo, useEffect } from 'react'
 import {
-  getUSStates,
   getCitiesForState,
   activateCities,
   deactivateCities,
@@ -13,10 +12,11 @@ import type { City } from '@prisma/client'
 
 interface CityManagerProps {
   initialCities: City[]
+  states: StateOption[]
   defaultState?: string
 }
 
-export function CityManager({ initialCities, defaultState = 'MD' }: CityManagerProps) {
+export function CityManager({ initialCities, states, defaultState = 'MD' }: CityManagerProps) {
   const [selectedState, setSelectedState] = useState<string>(defaultState)
   const [cities, setCities] = useState<CityWithStatus[]>([])
   const [search, setSearch] = useState('')
@@ -24,12 +24,6 @@ export function CityManager({ initialCities, defaultState = 'MD' }: CityManagerP
   const [busy, startTransition] = useTransition()
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
   const [selectedNames, setSelectedNames] = useState<Set<string>>(new Set())
-
-  // Load states on mount
-  const [stateOptions, setStateOptions] = useState<StateOption[]>([])
-  useEffect(() => {
-    getUSStates().then(setStateOptions).catch(() => {})
-  }, [])
 
   // Load cities when state changes
   useEffect(() => {
@@ -159,7 +153,7 @@ export function CityManager({ initialCities, defaultState = 'MD' }: CityManagerP
               disabled={loading}
               className="px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0B1F3D] bg-white min-w-[180px]"
             >
-              {stateOptions.map((s) => (
+              {states.map((s) => (
                 <option key={s.code} value={s.code}>
                   {s.name} ({s.code})
                 </option>

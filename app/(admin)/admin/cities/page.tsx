@@ -1,4 +1,5 @@
 import { CityService } from '@/modules/cities/services/city.service'
+import { getUSStates } from '@/modules/cities/actions/city-catalog'
 import { CityManager } from '@/components/admin/city-manager'
 
 export const metadata = {
@@ -9,7 +10,10 @@ export const metadata = {
 export const dynamic = 'force-dynamic'
 
 export default async function AdminCitiesPage() {
-  const cities = await CityService.getAll()
+  const [cities, states] = await Promise.all([
+    CityService.getAll(),
+    getUSStates(),
+  ])
 
   return (
     <div className="min-h-screen">
@@ -24,7 +28,7 @@ export default async function AdminCitiesPage() {
       </div>
 
       <div className="p-8">
-        <CityManager initialCities={cities} defaultState="MD" />
+        <CityManager initialCities={cities} states={states} defaultState="MD" />
       </div>
     </div>
   )
