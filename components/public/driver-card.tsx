@@ -28,7 +28,7 @@ export function DriverCard({ driver }: { driver: DriverSearchResultItem }) {
   return (
     <article className="bg-white border border-gray-100 rounded-2xl overflow-hidden shadow-sm hover:shadow-lg hover:border-[#0B1F3D]/20 transition-all flex flex-col group">
       {/* ── Media Section ── */}
-      <Link href={`/drivers/${driver.slug}`} className="relative block aspect-[4/3] bg-gray-100 overflow-hidden flex-shrink-0">
+      <Link href={`/drivers/${driver.slug}`} className="relative block aspect-[5/3] bg-gray-100 overflow-hidden flex-shrink-0">
         {heroPhoto ? (
           <Image
             src={heroPhoto}

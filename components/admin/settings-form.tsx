@@ -23,6 +23,18 @@ const fieldLabels: Record<string, string> = {
   [CONFIG_KEYS.DRIVER_REJECTION_EMAIL_SUBJECT]: 'Driver rejection email subject',
 }
 
+// Explicit field type mapping — avoids false matches like EMAIL_SUBJECT being treated as email
+const fieldTypes: Record<string, 'email' | 'text' | 'number'> = {
+  [CONFIG_KEYS.ADMIN_NOTIFICATION_EMAIL]: 'email',
+  [CONFIG_KEYS.SUPPORT_EMAIL]: 'email',
+  [CONFIG_KEYS.DEFAULT_SENDER_EMAIL]: 'email',
+  [CONFIG_KEYS.FREE_PHOTO_LIMIT]: 'number',
+  [CONFIG_KEYS.MAX_FEATURED_DRIVERS]: 'number',
+  [CONFIG_KEYS.DEFAULT_SENDER_NAME]: 'text',
+  [CONFIG_KEYS.DRIVER_APPROVAL_EMAIL_SUBJECT]: 'text',
+  [CONFIG_KEYS.DRIVER_REJECTION_EMAIL_SUBJECT]: 'text',
+}
+
 function SubmitButton() {
   const { pending } = useFormStatus()
   return (
@@ -57,7 +69,7 @@ export function SettingsForm({ configs }: SettingsFormProps) {
               <input
                 id={config.key}
                 name={config.key}
-                type={config.key.includes('EMAIL') ? 'email' : 'text'}
+                type={fieldTypes[config.key] || 'text'}
                 defaultValue={config.value}
                 className={`w-full px-4 py-3 bg-white border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#0B1F3D] focus:border-transparent ${
                   fieldErrors?.[config.key] ? 'border-red-300' : 'border-gray-300'

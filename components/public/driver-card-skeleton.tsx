@@ -2,7 +2,7 @@ export function DriverCardSkeleton() {
   return (
     <div className="bg-white border border-gray-100 rounded-2xl overflow-hidden shadow-sm animate-pulse">
       {/* Image area */}
-      <div className="relative aspect-[4/3] bg-gray-200">
+      <div className="relative aspect-[5/3] bg-gray-200">
         <div className="absolute top-3 left-3 w-20 h-6 bg-gray-300/50 rounded-lg" />
         <div className="absolute top-3 right-3 w-24 h-6 bg-gray-300/50 rounded-lg" />
         <div className="absolute bottom-3 left-3 w-10 h-10 bg-gray-300/50 rounded-xl" />
