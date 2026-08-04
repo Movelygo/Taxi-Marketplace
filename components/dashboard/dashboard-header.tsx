@@ -128,7 +128,7 @@ export function DashboardHeader({ userEmail, isAdmin = false }: DashboardHeaderP
             {accountOpen && (
               <div className="absolute right-0 top-full mt-1 w-60 bg-white border border-gray-200 rounded-xl shadow-lg py-1.5 z-50">
                 <div className="px-4 py-2 border-b border-gray-100">
-                  <p className="text-[10px] font-bold uppercase tracking-wider text-gray-500">Signed in as</p>
+                  <p className="text-xs font-bold uppercase tracking-wider text-gray-500">Signed in as</p>
                   <p className="text-sm text-gray-900 truncate">{userEmail}</p>
                 </div>
                 <Link href="/dashboard/profile" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">

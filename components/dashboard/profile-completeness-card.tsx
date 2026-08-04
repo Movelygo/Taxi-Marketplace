@@ -27,7 +27,7 @@ export function ProfileCompletenessCard({ completeness, compact = false }: Profi
             <div className="flex flex-col sm:flex-row items-center gap-2 mb-1">
               <h3 className="text-lg font-black text-gray-900 tracking-tight">Profile completeness</h3>
               {isComplete && (
-                <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-green-50 text-green-700 text-[10px] font-black uppercase tracking-wider border border-green-100">
+                <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-green-50 text-green-700 text-xs font-black uppercase tracking-wider border border-green-100">
                   <CheckCircle2 className="w-3 h-3" />
                   Complete
                 </span>
@@ -44,7 +44,7 @@ export function ProfileCompletenessCard({ completeness, compact = false }: Profi
 
       {!isComplete && missing.length > 0 && (
         <div className="border-t border-gray-50 bg-[#FBFBFC] px-6 py-5">
-          <p className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-3">
+          <p className="text-xs font-black text-gray-400 uppercase tracking-[0.2em] mb-3">
             Next steps to 100%
           </p>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
@@ -60,7 +60,7 @@ export function ProfileCompletenessCard({ completeness, compact = false }: Profi
                     <p className="text-xs font-bold text-gray-900 group-hover:text-[#0B1F3D]">
                       {item.label}
                     </p>
-                    <p className="text-[9px] font-medium text-gray-500">{item.hint}</p>
+                    <p className="text-[10px] font-medium text-gray-500">{item.hint}</p>
                   </div>
                 </div>
                 <ChevronRight className="w-3.5 h-3.5 text-gray-300 group-hover:text-[#0B1F3D] transition-colors" />

@@ -69,17 +69,17 @@ function MetricCard({
   iconColor: string
 }) {
   return (
-    <div className="bg-white rounded-3xl border border-gray-100 shadow-sm p-5 hover:shadow-md transition-all group">
-      <div className="flex items-center gap-3 mb-3">
-        <div className={`w-10 h-10 rounded-xl ${iconBg} flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform`}>
-          <Icon className={`w-5 h-5 ${iconColor}`} />
+    <div className="bg-white rounded-3xl border border-gray-100 shadow-sm p-6 hover:shadow-md transition-all group">
+      <div className="flex items-center gap-4 mb-4">
+        <div className={`w-12 h-12 rounded-2xl ${iconBg} flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform`}>
+          <Icon className={`w-6 h-6 ${iconColor}`} />
         </div>
         <div>
-          <p className="text-[9px] font-black text-gray-400 uppercase tracking-widest leading-none mb-1">{label}</p>
-          <h3 className="text-xl font-black text-gray-900 leading-none">{value}</h3>
+          <p className="text-xs font-black text-gray-400 uppercase tracking-widest leading-none mb-1">{label}</p>
+          <h3 className="text-2xl font-black text-gray-900 leading-none">{value}</h3>
         </div>
       </div>
-      <p className="text-[10px] font-medium text-gray-500 leading-tight">{description}</p>
+      <p className="text-xs font-medium text-gray-500">{description}</p>
     </div>
   )
 }

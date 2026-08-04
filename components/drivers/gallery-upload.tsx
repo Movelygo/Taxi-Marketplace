@@ -84,11 +84,11 @@ export function GalleryUpload({ photos, limit }: GalleryUploadProps) {
   return (
     <div className="bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden">
       <div className="p-6 border-b border-gray-50 bg-gray-50/30">
-        <div className="flex items-center gap-2 mb-0.5 text-[#0B1F3D]">
-          <Car className="w-4 h-4" />
-          <h2 className="text-lg font-black tracking-tight uppercase tracking-widest text-xs">Vehicle Gallery</h2>
+        <div className="flex items-center gap-2 mb-1 text-[#0B1F3D]">
+          <Car className="w-5 h-5" />
+          <h2 className="text-xl font-black tracking-tight">Vehicle Gallery</h2>
         </div>
-        <p className="text-[10px] font-medium text-gray-400">
+        <p className="text-sm font-medium text-gray-500">
           {localPhotos.length} / {limit} slots used
         </p>
       </div>
@@ -199,7 +199,7 @@ export function GalleryUpload({ photos, limit }: GalleryUploadProps) {
                 <p className="text-sm font-black text-gray-900 tracking-tight">
                   {uploading ? 'Uploading...' : 'Add photo'}
                 </p>
-                <p className="text-[10px] font-medium text-gray-400">
+                <p className="text-xs font-medium text-gray-500">
                   {remaining} remaining
                 </p>
               </div>
@@ -213,7 +213,7 @@ export function GalleryUpload({ photos, limit }: GalleryUploadProps) {
         )}
 
         {error && (
-          <div className="p-3 bg-red-50 border border-red-100 rounded-xl flex items-center gap-2 text-red-700 font-bold text-[10px]">
+          <div className="p-3 bg-red-50 border border-red-100 rounded-xl flex items-center gap-2 text-red-700 font-bold text-xs">
             <Info className="w-3 h-3 flex-shrink-0" />
             <p>{error}</p>
           </div>

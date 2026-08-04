@@ -49,7 +49,7 @@ interface ProfileFormProps {
 function FieldError({ state, field }: { state: any; field: string }) {
   if (state?.error && typeof state.error === 'object' && field in state.error) {
     return (
-      <div className="flex items-center gap-1 mt-1 text-red-600 font-bold text-[10px]">
+      <div className="flex items-center gap-1 mt-1 text-red-600 font-bold text-xs">
         <Info className="w-3 h-3" />
         <span>{state.error[field]?.[0]}</span>
       </div>
@@ -61,11 +61,11 @@ function FieldError({ state, field }: { state: any; field: string }) {
 function SectionTitle({ title, subtitle, icon: Icon }: { title: string; subtitle?: string; icon: any }) {
   return (
     <div className="mb-6">
-      <div className="flex items-center gap-2.5 mb-1 text-[#0B1F3D]">
+      <div className="flex items-center gap-2.5 mb-1.5 text-[#0B1F3D]">
         {Icon && <Icon className="w-5 h-5" />}
         <h3 className="text-xl font-black tracking-tight">{title}</h3>
       </div>
-      {subtitle && <p className="text-xs font-medium text-gray-500">{subtitle}</p>}
+      {subtitle && <p className="text-sm font-medium text-gray-500">{subtitle}</p>}
     </div>
   )
 }
@@ -90,9 +90,15 @@ export function ProfileForm({
   return (
     <div className="bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden">
       <div className="p-6 border-b border-gray-50 bg-gray-50/30">
-        <h2 className="text-lg font-black text-gray-900 tracking-tight">
-          {isUpdate ? 'Business Details' : 'New Profile'}
-        </h2>
+        <div className="flex items-center gap-2.5 mb-1.5 text-[#0B1F3D]">
+          <User className="w-5 h-5" />
+          <h2 className="text-xl font-black tracking-tight">
+            {isUpdate ? 'Business Details' : 'New Profile'}
+          </h2>
+        </div>
+        <p className="text-sm font-medium text-gray-500">
+          {isUpdate ? 'Update your business information' : 'Create your driver profile'}
+        </p>
       </div>
       
       <div className="p-6">
@@ -106,7 +112,7 @@ export function ProfileForm({
             />
 
             <div className="space-y-4">
-              <div className="space-y-1">
+              <div className="space-y-1.5">
                 <Label htmlFor="displayName">Public Name *</Label>
                 <Input
                   id="displayName"
@@ -120,7 +126,7 @@ export function ProfileForm({
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-1">
+                <div className="space-y-1.5">
                   <Label htmlFor="phone">Phone *</Label>
                   <Input
                     id="phone"
@@ -133,7 +139,7 @@ export function ProfileForm({
                   <FieldError state={state} field="phone" />
                 </div>
 
-                <div className="space-y-1">
+                <div className="space-y-1.5">
                   <Label htmlFor="whatsappNumber">WhatsApp *</Label>
                   <Input
                     id="whatsappNumber"
@@ -148,7 +154,7 @@ export function ProfileForm({
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-1">
+                <div className="space-y-1.5">
                   <Label htmlFor="city">City *</Label>
                   <SearchableSelect
                     id="city"
@@ -165,7 +171,7 @@ export function ProfileForm({
                   <FieldError state={state} field="city" />
                 </div>
 
-                <div className="space-y-1">
+                <div className="space-y-1.5">
                   <Label htmlFor="serviceAreaText">Service Areas *</Label>
                   <Input
                     id="serviceAreaText"
@@ -180,7 +186,7 @@ export function ProfileForm({
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-1">
+                <div className="space-y-1.5">
                   <Label htmlFor="operatingHours">Hours</Label>
                   <Input
                     id="operatingHours"
@@ -192,12 +198,12 @@ export function ProfileForm({
                   <FieldError state={state} field="operatingHours" />
                 </div>
 
-                <div className="space-y-1">
+                <div className="space-y-1.5">
                   <Label htmlFor="availabilityStatus">Status</Label>
                   <select
                     id="availabilityStatus"
                     name="availabilityStatus"
-                    className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-4 focus:ring-[#0B1F3D]/5 focus:border-[#0B1F3D] outline-none transition-all bg-white font-bold text-sm text-gray-900 appearance-none cursor-pointer"
+                    className="w-full px-5 py-4 border border-gray-200 rounded-2xl focus:ring-4 focus:ring-[#0B1F3D]/5 focus:border-[#0B1F3D] outline-none transition-all bg-white font-bold text-gray-900 appearance-none cursor-pointer"
                     defaultValue={profile?.availabilityStatus || 'AVAILABLE'}
                   >
                     <option value="AVAILABLE">Available</option>
@@ -207,7 +213,7 @@ export function ProfileForm({
                 </div>
               </div>
 
-              <div className="space-y-1">
+              <div className="space-y-1.5">
                 <Label htmlFor="languages">Languages *</Label>
                 <Input
                   id="languages"
@@ -232,14 +238,14 @@ export function ProfileForm({
 
             <div className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-1">
+                <div className="space-y-1.5">
                   <Label htmlFor="vehicleType">Category *</Label>
                   <select
                     id="vehicleType"
                     name="vehicleType"
                     required
                     defaultValue={profile?.vehicleType ?? ''}
-                    className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-4 focus:ring-[#0B1F3D]/5 focus:border-[#0B1F3D] outline-none transition-all bg-white font-bold text-sm text-gray-900 appearance-none cursor-pointer"
+                    className="w-full px-5 py-4 border border-gray-200 rounded-2xl focus:ring-4 focus:ring-[#0B1F3D]/5 focus:border-[#0B1F3D] outline-none transition-all bg-white font-bold text-gray-900 appearance-none cursor-pointer"
                   >
                     <option value="" disabled>Select</option>
                     {VEHICLE_CATEGORIES.map((cat) => (
@@ -249,7 +255,7 @@ export function ProfileForm({
                   <FieldError state={state} field="vehicleType" />
                 </div>
 
-                <div className="space-y-1">
+                <div className="space-y-1.5">
                   <Label htmlFor="passengerCapacity">Capacity</Label>
                   <Input
                     id="passengerCapacity"
@@ -265,7 +271,7 @@ export function ProfileForm({
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="space-y-1">
+                <div className="space-y-1.5">
                   <Label htmlFor="vehicleMake">Make</Label>
                   <Input
                     id="vehicleMake"
@@ -276,7 +282,7 @@ export function ProfileForm({
                   />
                   <FieldError state={state} field="vehicleMake" />
                 </div>
-                <div className="space-y-1">
+                <div className="space-y-1.5">
                   <Label htmlFor="vehicleModel">Model</Label>
                   <Input
                     id="vehicleModel"
@@ -287,7 +293,7 @@ export function ProfileForm({
                   />
                   <FieldError state={state} field="vehicleModel" />
                 </div>
-                <div className="space-y-1">
+                <div className="space-y-1.5">
                   <Label htmlFor="vehicleYear">Year</Label>
                   <Input
                     id="vehicleYear"
@@ -312,7 +318,7 @@ export function ProfileForm({
             />
 
             <div className="space-y-6">
-              <div className="space-y-1">
+              <div className="space-y-1.5">
                 <Label htmlFor="bio">About your service</Label>
                 <textarea
                   id="bio"
@@ -320,28 +326,28 @@ export function ProfileForm({
                   rows={3}
                   placeholder="Bio..."
                   defaultValue={profile?.bio ?? ''}
-                  className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-4 focus:ring-[#0B1F3D]/5 focus:border-[#0B1F3D] outline-none transition-all bg-white font-medium text-sm text-gray-900 min-h-[80px]"
+                  className="w-full px-5 py-4 border border-gray-200 rounded-2xl focus:ring-4 focus:ring-[#0B1F3D]/5 focus:border-[#0B1F3D] outline-none transition-all bg-white font-medium text-gray-900 min-h-[120px]"
                 />
                 <FieldError state={state} field="bio" />
               </div>
 
               {amenities.length > 0 && (
-                <div className="space-y-2">
-                  <Label>Amenities</Label>
-                  <div className="grid grid-cols-2 lg:grid-cols-3 gap-1.5">
+                <div className="space-y-4">
+                  <Label>Amenities & Services</Label>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
                     {amenities.map((attr) => (
                       <label
                         key={attr.id}
-                        className="flex items-center gap-2 px-3 py-2 border border-gray-100 rounded-xl cursor-pointer hover:bg-gray-50 transition-all group has-[:checked]:border-[#0B1F3D] has-[:checked]:bg-blue-50/30"
+                        className="flex items-center gap-3 px-4 py-3 border border-gray-100 rounded-2xl cursor-pointer hover:bg-gray-50 transition-all group has-[:checked]:border-[#0B1F3D] has-[:checked]:bg-blue-50/30"
                       >
                         <input
                           type="checkbox"
                           name="amenities"
                           value={attr.key}
                           defaultChecked={selectedAmenities.includes(attr.key)}
-                          className="w-3.5 h-3.5 rounded border-gray-200 text-[#0B1F3D] focus:ring-[#0B1F3D] cursor-pointer"
+                          className="w-5 h-5 rounded-lg border-gray-200 text-[#0B1F3D] focus:ring-[#0B1F3D] cursor-pointer"
                         />
-                        <span className="text-[10px] font-bold text-gray-700 group-hover:text-[#0B1F3D]">{attr.label}</span>
+                        <span className="text-sm font-bold text-gray-700 group-hover:text-[#0B1F3D]">{attr.label}</span>
                       </label>
                     ))}
                   </div>
@@ -349,22 +355,22 @@ export function ProfileForm({
               )}
 
               {paymentMethods.length > 0 && (
-                <div className="space-y-2">
-                  <Label>Payments</Label>
-                  <div className="grid grid-cols-2 lg:grid-cols-3 gap-1.5">
+                <div className="space-y-4">
+                  <Label>Payment Methods Accepted</Label>
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                     {paymentMethods.map((attr) => (
                       <label
                         key={attr.id}
-                        className="flex items-center gap-2 px-3 py-2 border border-gray-100 rounded-xl cursor-pointer hover:bg-gray-50 transition-all group has-[:checked]:border-[#0B1F3D] has-[:checked]:bg-blue-50/30"
+                        className="flex items-center gap-3 px-4 py-3 border border-gray-100 rounded-2xl cursor-pointer hover:bg-gray-50 transition-all group has-[:checked]:border-[#0B1F3D] has-[:checked]:bg-blue-50/30"
                       >
                         <input
                           type="checkbox"
                           name="paymentMethods"
                           value={attr.key}
                           defaultChecked={selectedPayments.includes(attr.key)}
-                          className="w-3.5 h-3.5 rounded border-gray-200 text-[#0B1F3D] focus:ring-[#0B1F3D] cursor-pointer"
+                          className="w-5 h-5 rounded-lg border-gray-200 text-[#0B1F3D] focus:ring-[#0B1F3D] cursor-pointer"
                         />
-                        <span className="text-[10px] font-bold text-gray-700 group-hover:text-[#0B1F3D]">{attr.label}</span>
+                        <span className="text-sm font-bold text-gray-700 group-hover:text-[#0B1F3D]">{attr.label}</span>
                       </label>
                     ))}
                   </div>
@@ -380,12 +386,12 @@ export function ProfileForm({
               onStateChange={onFormStateChange} 
             />
             {state && 'success' in state && state.success && (
-              <div className="mt-4 p-3 bg-green-50 text-green-700 rounded-xl text-center font-bold text-xs border border-green-100 animate-in fade-in slide-in-from-top-1">
+              <div className="mt-5 p-4 bg-green-50 text-green-700 rounded-2xl text-center font-bold text-sm border border-green-100 animate-in fade-in slide-in-from-top-1">
                 {('message' in state && state.message) || 'Success!'}
               </div>
             )}
             {state?.error && typeof state.error === 'string' && (
-              <div className="mt-4 p-3 bg-red-50 text-red-700 rounded-xl text-center font-bold text-xs border border-red-100">
+              <div className="mt-5 p-4 bg-red-50 text-red-700 rounded-2xl text-center font-bold text-sm border border-red-100">
                 {state.error}
               </div>
             )}
@@ -398,7 +404,7 @@ export function ProfileForm({
 
 function Label({ htmlFor, children }: { htmlFor?: string; children: React.ReactNode }) {
   return (
-    <label htmlFor={htmlFor} className="block text-[10px] font-black text-gray-400 uppercase tracking-[0.15em] mb-1 ml-1">
+    <label htmlFor={htmlFor} className="block text-xs font-black text-gray-400 uppercase tracking-widest mb-1.5 ml-1">
       {children}
     </label>
   )
@@ -408,7 +414,7 @@ function Input(props: React.InputHTMLAttributes<HTMLInputElement>) {
   return (
     <input
       {...props}
-      className={`w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-4 focus:ring-[#0B1F3D]/5 focus:border-[#0B1F3D] outline-none transition-all bg-white font-bold text-sm text-gray-900 placeholder:text-gray-300 placeholder:font-medium ${props.className || ''}`}
+      className={`w-full px-5 py-4 border border-gray-200 rounded-2xl focus:ring-4 focus:ring-[#0B1F3D]/5 focus:border-[#0B1F3D] outline-none transition-all bg-white font-bold text-gray-900 placeholder:text-gray-300 placeholder:font-medium ${props.className || ''}`}
     />
   )
 }

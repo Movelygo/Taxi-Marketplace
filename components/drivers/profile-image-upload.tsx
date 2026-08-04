@@ -85,10 +85,11 @@ export function ProfileImageUpload({ currentImageUrl, externalBusy = false, onUp
   return (
     <div className="bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden">
       <div className="p-6 border-b border-gray-50 bg-gray-50/30">
-        <div className="flex items-center gap-2 mb-0.5 text-[#0B1F3D]">
-          <User className="w-4 h-4" />
-          <h2 className="text-lg font-black tracking-tight uppercase tracking-widest text-xs">Profile Photo</h2>
+        <div className="flex items-center gap-2.5 mb-1.5 text-[#0B1F3D]">
+          <User className="w-5 h-5" />
+          <h2 className="text-xl font-black tracking-tight">Profile Photo</h2>
         </div>
+        <p className="text-sm font-medium text-gray-500">Your primary profile image</p>
       </div>
 
       <div className="p-6">
@@ -123,7 +124,7 @@ export function ProfileImageUpload({ currentImageUrl, externalBusy = false, onUp
             </div>
 
             {previewUrl && (
-              <p className="text-[9px] font-black text-blue-600 uppercase tracking-widest animate-pulse">
+              <p className="text-[10px] font-black text-blue-600 uppercase tracking-widest animate-pulse">
                 Pending save
               </p>
             )}
@@ -140,13 +141,13 @@ export function ProfileImageUpload({ currentImageUrl, externalBusy = false, onUp
             />
 
             {success && (
-              <div className="p-3 bg-green-50 text-green-700 rounded-xl text-[10px] font-bold text-center border border-green-100">
+              <div className="p-3 bg-green-50 text-green-700 rounded-xl text-xs font-bold text-center border border-green-100">
                 Updated!
               </div>
             )}
 
             {error && (
-              <div className="p-3 bg-red-50 text-red-700 rounded-xl text-[10px] font-bold text-center border border-red-100">
+              <div className="p-3 bg-red-50 text-red-700 rounded-xl text-xs font-bold text-center border border-red-100">
                 {error}
               </div>
             )}

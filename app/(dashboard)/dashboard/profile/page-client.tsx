@@ -59,10 +59,10 @@ export function ProfileClient({
           <div className="bg-[#0B1F3D] rounded-3xl p-6 text-white shadow-xl relative overflow-hidden">
             <div className="relative z-10">
               <h3 className="text-lg font-black mb-2 tracking-tight">Need help?</h3>
-              <p className="text-white/60 text-xs font-medium leading-relaxed mb-4">
+              <p className="text-white/60 text-sm font-medium leading-relaxed mb-4">
                 Your profile is your business card. Use high-quality photos and clear descriptions to attract more customers.
               </p>
-              <div className="text-[10px] font-black uppercase tracking-widest text-amber-400">
+              <div className="text-xs font-black uppercase tracking-widest text-amber-400">
                 Support: hello@movelygo.com
               </div>
             </div>

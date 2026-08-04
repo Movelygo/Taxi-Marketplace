@@ -73,7 +73,7 @@ export function OnboardingCallout({ tone, title, description, cta, eyebrow }: On
         
         <div className="flex-1 min-w-0">
           {eyebrow && (
-            <p className={`text-[10px] font-black uppercase tracking-[0.2em] mb-1 ${styles.eyebrow}`}>
+            <p className={`text-xs font-black uppercase tracking-[0.2em] mb-1 ${styles.eyebrow}`}>
               {eyebrow}
             </p>
           )}
@@ -89,7 +89,7 @@ export function OnboardingCallout({ tone, title, description, cta, eyebrow }: On
           <div className="flex-shrink-0">
             <Link
               href={cta.href}
-              className={`inline-flex items-center gap-2 px-5 py-2.5 rounded-xl font-black text-xs transition-all transform active:scale-95 shadow-md ${styles.ctaClass}`}
+              className={`inline-flex items-center gap-2 px-5 py-2.5 rounded-xl font-black text-sm transition-all transform active:scale-95 shadow-md ${styles.ctaClass}`}
             >
               {cta.label}
               <ChevronRight className="w-3.5 h-3.5" />
