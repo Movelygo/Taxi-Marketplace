@@ -31,6 +31,7 @@ export interface DriverSearchResultItem {
   isFeatured: boolean
   bio: string | null
   cityRel: { name: string; state: string } | null
+  photos: { url: string; sortOrder: number }[]
 }
 
 export interface DriverSearchResult {

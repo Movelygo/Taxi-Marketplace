@@ -262,6 +262,11 @@ export class DriverRepository {
         isFeatured: true,
         bio: true,
         cityRel: { select: { name: true, state: true } },
+        photos: {
+          select: { url: true, sortOrder: true },
+          orderBy: { sortOrder: 'asc' },
+          take: 1,
+        },
       },
     })
 
