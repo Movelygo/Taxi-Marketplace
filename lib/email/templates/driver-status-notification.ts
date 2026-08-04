@@ -1,42 +1,77 @@
+import {
+  emailLayout,
+  text,
+  buttonPrimary,
+  link,
+  callout,
+  appUrl,
+  escapeHtml,
+} from './layout'
+
 export function buildDriverStatusNotificationHtml(driver: {
   displayName: string
   status: 'APPROVED' | 'REJECTED' | 'SUSPENDED' | 'PENDING'
   slug: string
 }): string {
   const isApproved = driver.status === 'APPROVED'
-  const title = isApproved ? 'Your Movely profile is now live' : 'Your Movely profile needs attention'
-  const publicUrl = `${appUrl('/drivers')}/${driver.slug}`
+  const isSuspended = driver.status === 'SUSPENDED'
+  const publicUrl = appUrl(`/drivers/${driver.slug}`)
+  const dashboardUrl = appUrl('/dashboard')
 
-  return `
-    <div style="font-family: system-ui, -apple-system, sans-serif; max-width: 600px; margin: 0 auto; color: #111827;">
-      <h1 style="color: #0B1F3D; font-size: 20px; margin-bottom: 16px;">${title}</h1>
+  const headerTitle = isApproved
+    ? 'Your profile is now live'
+    : isSuspended
+      ? 'Your profile has been suspended'
+      : 'Your profile needs attention'
 
-      <p style="font-size: 15px; line-height: 1.6;">
-        Hi ${escapeHtml(driver.displayName)},
-      </p>
+  const headerSubtitle = isApproved
+    ? 'You\'re now visible to customers on Movely'
+    : 'Please review your profile and take action'
 
-      ${isApproved
-        ? `<p style="font-size: 15px; line-height: 1.6;">
-            Your driver profile has been reviewed and approved. It is now visible to customers on the Movely directory.
-          </p>
-          <p style="font-size: 15px; line-height: 1.6;">
-            <a href="${publicUrl}" style="color: #0B1F3D; font-weight: 600; text-decoration: underline;">View your public profile</a>
-          </p>
-          <p style="font-size: 15px; line-height: 1.6;">
-            You can track profile views and leads from your dashboard. Welcome aboard!
-          </p>`
-        : `<p style="font-size: 15px; line-height: 1.6;">
-            Your driver profile has been reviewed and currently does not meet the requirements to be listed on Movely.
-          </p>
-          <p style="font-size: 15px; line-height: 1.6;">
-            You can review and update your profile from your dashboard at any time. If you believe this was a mistake, please reply to this email.
-          </p>`}
+  const headerBg = isApproved ? '#0B1F3D' : isSuspended ? '#7F1D1D' : '#0B1F3D'
 
-      <p style="margin-top: 32px; font-size: 12px; color: #6B7280;">
-        Movely — Driver-customer connection platform
-      </p>
-    </div>
-  `
+  let body = ''
+
+  body += text(`Hi <strong>${escapeHtml(driver.displayName)}</strong>,`)
+
+  if (isApproved) {
+    body += text(
+      'Your driver profile has been reviewed and approved. It is now visible to customers searching the Movely directory.',
+    )
+    body += callout(
+      'You can track profile views and customer leads from your dashboard. Keep your availability status updated to attract more inquiries.',
+      'success',
+    )
+    body += buttonPrimary(publicUrl, 'View your public profile')
+    body += text(`Or visit your ${link(dashboardUrl, 'driver dashboard')} to manage your profile.`)
+  } else if (isSuspended) {
+    body += text(
+      'Your driver profile has been suspended and is no longer visible to customers. This may be due to a policy violation or a report from a user.',
+    )
+    body += callout(
+      'If you believe this was a mistake, please reply to this email and our team will review your case.',
+      'warning',
+    )
+    body += buttonPrimary(dashboardUrl, 'Go to dashboard')
+  } else {
+    body += text(
+      'Your driver profile has been reviewed and currently does not meet the requirements to be listed on Movely.',
+    )
+    body += text(
+      'You can review and update your profile from your dashboard at any time. If you believe this was a mistake, please reply to this email.',
+    )
+    body += buttonPrimary(dashboardUrl, 'Update your profile')
+  }
+
+  return emailLayout({
+    preheader: isApproved
+      ? 'Your Movely driver profile is now live and visible to customers.'
+      : 'Your Movely driver profile needs attention. Please review.',
+    headerTitle,
+    headerSubtitle,
+    headerBg,
+    body,
+  })
 }
 
 export function buildDriverStatusNotificationText(driver: {
@@ -45,34 +80,35 @@ export function buildDriverStatusNotificationText(driver: {
   slug: string
 }): string {
   const isApproved = driver.status === 'APPROVED'
-  const publicUrl = `${appUrl('/drivers')}/${driver.slug}`
+  const isSuspended = driver.status === 'SUSPENDED'
+  const publicUrl = appUrl(`/drivers/${driver.slug}`)
+  const dashboardUrl = appUrl('/dashboard')
 
-  return `Hi ${driver.displayName},
+  const title = isApproved
+    ? 'Your profile is now live'
+    : isSuspended
+      ? 'Your profile has been suspended'
+      : 'Your profile needs attention'
 
-${isApproved
-    ? `Your driver profile has been reviewed and approved. It is now visible to customers on the Movely directory.
+  let body = `Hi ${driver.displayName},\n\n`
 
-View your public profile: ${publicUrl}
+  if (isApproved) {
+    body += `Your driver profile has been reviewed and approved. It is now visible to customers on the Movely directory.\n\n`
+    body += `View your public profile: ${publicUrl}\n\n`
+    body += `Driver dashboard: ${dashboardUrl}\n\n`
+    body += `You can track profile views and customer leads from your dashboard. Keep your availability status updated to attract more inquiries.`
+  } else if (isSuspended) {
+    body += `Your driver profile has been suspended and is no longer visible to customers.\n\n`
+    body += `If you believe this was a mistake, please reply to this email.\n\n`
+    body += `Dashboard: ${dashboardUrl}`
+  } else {
+    body += `Your driver profile has been reviewed and currently does not meet the requirements to be listed on Movely.\n\n`
+    body += `You can review and update your profile from your dashboard at any time.\n\n`
+    body += `Dashboard: ${dashboardUrl}\n\n`
+    body += `If you believe this was a mistake, please reply to this email.`
+  }
 
-You can track profile views and leads from your dashboard. Welcome aboard!`
-    : `Your driver profile has been reviewed and currently does not meet the requirements to be listed on Movely.
+  body += `\n\nMovely — Driver-customer connection platform\nhello@movelygo.com`
 
-You can review and update your profile from your dashboard at any time. If you believe this was a mistake, please reply to this email.`}
-
-Movely — Driver-customer connection platform
-`
-}
-
-function appUrl(path: string): string {
-  const base = process.env.NEXT_PUBLIC_APP_URL || 'https://staging.movelygo.com'
-  return `${base}${path}`
-}
-
-function escapeHtml(text: string): string {
-  return text
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#039;')
+  return `${title}\n\n${body}`
 }

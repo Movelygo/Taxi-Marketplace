@@ -47,6 +47,19 @@ export default function PrivacyPage() {
         </ul>
       </LegalSection>
 
+      <LegalSection title="Driver verification & responsibility">
+        <p>
+          Movely is <strong>not</strong> a verification service. We do not confirm driver identities, licenses, insurance, or backgrounds. Drivers self-declare that they hold the required licenses, registrations, and insurance to operate in their jurisdiction, but Movely does not validate these claims.
+        </p>
+        <p className="mt-3">
+          <strong>Customers are responsible for verifying a driver's credentials</strong> before arranging a trip. We encourage customers to ask drivers for proof of licensing and insurance, agree on pricing and terms in advance, and arrange trips directly with the driver. Movely facilitates discovery and connection — not the transaction.
+        </p>
+        <p className="mt-3">
+          If you encounter a profile that appears misleading or unsafe, please report it through the profile page or by emailing{' '}
+          <a href="mailto:hello@movelygo.com" className="text-[#0B1F3D] font-semibold hover:underline">hello@movelygo.com</a>.
+        </p>
+      </LegalSection>
+
       <LegalSection title="Public profile information">
         <p>
           Driver profile information is intentionally public. By creating a profile, drivers consent to having their displayed information (name, photo, contact, service details) visible to anyone visiting the site.

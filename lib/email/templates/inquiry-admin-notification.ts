@@ -1,3 +1,12 @@
+import {
+  emailLayout,
+  text,
+  dataTable,
+  buttonPrimary,
+  appUrl,
+  escapeHtml,
+} from './layout'
+
 export function buildInquiryAdminNotificationHtml(inquiry: {
   name: string
   email: string
@@ -11,35 +20,23 @@ export function buildInquiryAdminNotificationHtml(inquiry: {
     timeStyle: 'short',
   })
 
-  return `
-    <div style="font-family: system-ui, -apple-system, sans-serif; max-width: 600px; margin: 0 auto; color: #111827;">
-      <h1 style="color: #0B1F3D; font-size: 20px; margin-bottom: 16px;">New contact form submission</h1>
-      <p style="font-size: 14px; color: #6B7280; margin-bottom: 24px;">Received on ${date}</p>
+  const body = [
+    text(`A new contact form submission was received on <strong>${date}</strong>.`),
+    dataTable([
+      { label: 'From', value: `${inquiry.name} <${inquiry.email}>` },
+      { label: 'Subject', value: inquiry.subject },
+      { label: 'Message', value: inquiry.message },
+    ]),
+    buttonPrimary(appUrl('/admin/inquiries'), 'View in admin inbox'),
+    text(`Or reply directly to ${escapeHtml(inquiry.email)}.`),
+  ].join('')
 
-      <table style="width: 100%; border-collapse: collapse; font-size: 14px;">
-        <tr>
-          <td style="padding: 8px 0; border-bottom: 1px solid #E5E7EB; color: #6B7280; width: 100px;">From</td>
-          <td style="padding: 8px 0; border-bottom: 1px solid #E5E7EB;">${escapeHtml(inquiry.name)} &lt;${escapeHtml(inquiry.email)}&gt;</td>
-        </tr>
-        <tr>
-          <td style="padding: 8px 0; border-bottom: 1px solid #E5E7EB; color: #6B7280;">Subject</td>
-          <td style="padding: 8px 0; border-bottom: 1px solid #E5E7EB;">${escapeHtml(inquiry.subject)}</td>
-        </tr>
-        <tr>
-          <td style="padding: 8px 0; border-bottom: 1px solid #E5E7EB; color: #6B7280; vertical-align: top;">Message</td>
-          <td style="padding: 8px 0; border-bottom: 1px solid #E5E7EB; white-space: pre-wrap;">${escapeHtml(inquiry.message)}</td>
-        </tr>
-      </table>
-
-      <p style="margin-top: 24px; font-size: 14px;">
-        <a href="${appUrl('/admin/inquiries')}" style="color: #0B1F3D; font-weight: 600; text-decoration: underline;">View in admin inbox</a>
-      </p>
-
-      <p style="margin-top: 32px; font-size: 12px; color: #6B7280;">
-        Movely — Driver-customer connection platform
-      </p>
-    </div>
-  `
+  return emailLayout({
+    preheader: `New inquiry from ${inquiry.name}: ${inquiry.subject}`,
+    headerTitle: 'New contact form submission',
+    headerSubtitle: 'A visitor sent a message through the contact form',
+    body,
+  })
 }
 
 export function buildInquiryAdminNotificationText(inquiry: {
@@ -59,19 +56,7 @@ Received: ${inquiry.createdAt.toLocaleString('en-US')}
 ${inquiry.message}
 
 View in admin: ${appUrl('/admin/inquiries')}
-`
-}
 
-function appUrl(path: string): string {
-  const base = process.env.NEXT_PUBLIC_APP_URL || 'https://staging.movelygo.com'
-  return `${base}${path}`
-}
-
-function escapeHtml(text: string): string {
-  return text
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#039;')
+Movely — Driver-customer connection platform
+hello@movelygo.com`
 }
