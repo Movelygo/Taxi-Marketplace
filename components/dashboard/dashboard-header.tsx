@@ -18,6 +18,7 @@ interface DashboardHeaderProps {
 const NAV_ITEMS = [
   { href: '/dashboard', label: 'Overview' },
   { href: '/dashboard/profile', label: 'Profile' },
+  { href: '/dashboard/reviews', label: 'Reviews' },
 ]
 
 /**

@@ -6,6 +6,31 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ---
 
+## [Phase E — Reviews & Reports] - 2026-08-03
+
+### Added
+
+- **Review system**: customers can submit 1-5 star reviews with text; anti-fraud (1/IP/driver/24h); "Contacted this driver" verified badge for reviewers with prior lead-clicks; all reviews enter PENDING for admin moderation
+- **Driver response**: drivers can respond publicly to approved reviews (1 response per review) from their dashboard
+- **Driver appeal**: drivers can flag reviews as unfair; admin resolves via dismiss (keep) or remove (reject)
+- **Report system**: visitors can report profiles for safety concerns, fake profiles, misleading info, or inappropriate conduct; rate-limited (3/IP/driver/24h)
+- **Admin moderation queues**: `/admin/reviews` (filter by status or flagged appeals) and `/admin/reports` (with priority indicators and admin notes)
+- **Rating in directory**: driver cards show star rating + count (threshold: 3+ reviews for numeric display, "New" badge for 1-2); "Top rated" sort option
+- **Rating histogram**: driver profile shows 5-star distribution chart
+- **Email notifications**: review pending (to admin), review approved (to driver), report submitted (to admin) — all using branded template system
+- **Moderation guidelines**: `docs/REVIEW_MODERATION_GUIDELINES.md` with 8 removal categories, appeal handling, report workflow, and suspension thresholds
+- **Email previews**: 3 new templates added to `/dev/emails` preview page
+
+### Changed
+
+- `DriverSearchResultItem` type now includes `rating` and `reviewCount` fields
+- Driver search query aggregates approved reviews and computes average with 3-review display threshold
+- Admin sidebar includes Reviews and Reports navigation
+- Driver dashboard header includes Reviews tab
+- Driver profile page includes reviews section and report button in Trust & Safety card
+
+---
+
 ## [Phase C Stability Audit] - 2026-08-03
 
 ### Fixed

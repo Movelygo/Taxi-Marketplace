@@ -102,11 +102,26 @@ export function DriverCard({ driver }: { driver: DriverSearchResultItem }) {
 
       {/* ── Content Section ── */}
       <div className="p-4 flex flex-col flex-1">
-        {/* Title + location */}
+        {/* Title + rating + location */}
         <Link href={`/drivers/${driver.slug}`} className="mb-3">
-          <h3 className="text-base font-bold text-gray-900 truncate group-hover:text-[#0B1F3D] transition-colors leading-tight">
-            {driver.displayName}
-          </h3>
+          <div className="flex items-center justify-between gap-2">
+            <h3 className="text-base font-bold text-gray-900 truncate group-hover:text-[#0B1F3D] transition-colors leading-tight">
+              {driver.displayName}
+            </h3>
+            {driver.rating !== null && (
+              <div className="flex items-center gap-1 flex-shrink-0">
+                <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
+                <span className="text-xs font-bold text-gray-900">{driver.rating.toFixed(1)}</span>
+                <span className="text-[10px] text-gray-400">({driver.reviewCount})</span>
+              </div>
+            )}
+            {driver.rating === null && driver.reviewCount > 0 && (
+              <div className="flex items-center gap-1 flex-shrink-0">
+                <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
+                <span className="text-xs font-bold text-gray-500">New</span>
+              </div>
+            )}
+          </div>
           <div className="flex items-center gap-1.5 text-xs text-gray-500 mt-1">
             <MapPin className="w-3.5 h-3.5 flex-shrink-0 text-gray-400" />
             <span className="truncate font-medium">{cityName}{stateCode && `, ${stateCode}`}</span>

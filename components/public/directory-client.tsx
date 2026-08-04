@@ -188,11 +188,12 @@ export function DirectoryClient({
         {/* Sort dropdown */}
         <select
           value={filters.sort}
-          onChange={(e) => handleFiltersChange({ ...filters, sort: e.target.value as 'featured' | 'newest' })}
+          onChange={(e) => handleFiltersChange({ ...filters, sort: e.target.value as 'featured' | 'newest' | 'rating' })}
           className="px-3 py-2.5 bg-white border border-gray-200 rounded-lg text-sm font-medium text-gray-700"
         >
           <option value="featured">Featured first</option>
           <option value="newest">Newest</option>
+          <option value="rating">Top rated</option>
         </select>
       </div>
 
@@ -206,11 +207,12 @@ export function DirectoryClient({
                 {/* Sort */}
                 <select
                   value={filters.sort}
-                  onChange={(e) => handleFiltersChange({ ...filters, sort: e.target.value as 'featured' | 'newest' })}
+                  onChange={(e) => handleFiltersChange({ ...filters, sort: e.target.value as 'featured' | 'newest' | 'rating' })}
                   className="text-xs px-2 py-1 border border-gray-200 rounded text-gray-600"
                 >
                   <option value="featured">Featured</option>
                   <option value="newest">Newest</option>
+                  <option value="rating">Top rated</option>
                 </select>
               </div>
               <DirectoryFilters

@@ -1,5 +1,6 @@
 import { DriverService } from '@/modules/drivers/services/driver.service'
 import { GalleryService } from '@/modules/gallery/services/gallery.service'
+import { ReviewService } from '@/modules/reviews/services/review.service'
 import { notFound } from 'next/navigation'
 import Image from 'next/image'
 import Link from 'next/link'
@@ -7,6 +8,8 @@ import { getWhatsAppLink, getPhoneCallLink } from '@/lib/utils/phone'
 import { TrackProfileView } from '@/components/public/track-profile-view'
 import { PageViewTracker } from '@/components/analytics/page-view-tracker'
 import { ProfileGallery } from '@/components/public/profile-gallery'
+import { ReviewsSection } from '@/components/public/reviews-section'
+import { ReportButton } from '@/components/public/report-button'
 import { 
   MapPin, 
   Car, 
@@ -85,6 +88,8 @@ export default async function DriverProfilePage({ params }: DriverProfilePagePro
   }
 
   const photos = await GalleryService.getByDriverSlug(slug)
+  const reviews = await ReviewService.getApprovedForDriver(driver.id)
+  const ratingSummary = await ReviewService.getRatingSummary(driver.id)
 
   const whatsappLink = getWhatsAppLink(driver.whatsappNumber, `Hi ${driver.displayName}, I found you on Movely and would like to book a ride.`)
   const phoneLink = getPhoneCallLink(driver.phone)
@@ -246,6 +251,13 @@ export default async function DriverProfilePage({ params }: DriverProfilePagePro
               </section>
             )}
 
+            {/* Reviews */}
+            <ReviewsSection
+              reviews={reviews}
+              ratingSummary={ratingSummary}
+              driverId={driver.id}
+            />
+
           </div>
 
           {/* Sidebar (Right) */}
@@ -316,9 +328,10 @@ export default async function DriverProfilePage({ params }: DriverProfilePagePro
                   </div>
                   <h3 className="font-black text-blue-900 uppercase tracking-tight">Trust & Safety</h3>
                 </div>
-                <p className="text-blue-900/70 text-sm leading-relaxed font-medium">
+                <p className="text-blue-900/70 text-sm leading-relaxed font-medium mb-4">
                   Movely connects you directly with drivers. Always verify credentials and discuss safety before your trip.
                 </p>
+                <ReportButton driverId={driver.id} />
               </div>
 
             </div>

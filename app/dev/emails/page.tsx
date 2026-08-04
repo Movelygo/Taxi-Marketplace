@@ -1,6 +1,7 @@
 import { buildWelcomeEmailHtml } from '@/lib/email/templates/welcome-email'
 import { buildDriverStatusNotificationHtml } from '@/lib/email/templates/driver-status-notification'
 import { buildInquiryAdminNotificationHtml } from '@/lib/email/templates/inquiry-admin-notification'
+import { buildReviewApprovedHtml, buildReviewPendingAdminHtml, buildReportAdminHtml } from '@/lib/email/templates/review-report-emails'
 import Link from 'next/link'
 
 export const metadata = {
@@ -13,6 +14,9 @@ const TEMPLATES = [
   { slug: 'driver-rejected', label: 'Driver Rejected' },
   { slug: 'driver-suspended', label: 'Driver Suspended' },
   { slug: 'inquiry', label: 'Inquiry Admin Notification' },
+  { slug: 'review-approved', label: 'Review Approved (to Driver)' },
+  { slug: 'review-pending', label: 'Review Pending (to Admin)' },
+  { slug: 'report-admin', label: 'Report Submitted (to Admin)' },
 ]
 
 function getHtml(slug: string): string {
@@ -45,6 +49,32 @@ function getHtml(slug: string): string {
         message: 'Hi, do you offer service from BWI to downtown Baltimore? I need a ride next Friday at 6 AM.',
         id: 'test-id',
         createdAt: new Date(),
+      })
+    case 'review-approved':
+      return buildReviewApprovedHtml({
+        rating: 5,
+        text: 'Excellent service! John was punctual, professional, and the car was spotless. Highly recommend for airport transfers.',
+        reviewerName: 'Jane Customer',
+        isVerifiedContact: true,
+        driverSlug: 'johns-taxi-service',
+      })
+    case 'review-pending':
+      return buildReviewPendingAdminHtml({
+        rating: 2,
+        text: 'The driver was 20 minutes late and the car was not as clean as expected. The ride itself was okay once we got going.',
+        reviewerName: 'Mark T.',
+        reviewerEmail: 'mark@example.com',
+        isVerifiedContact: true,
+        driverDisplayName: "John's Taxi Service",
+        reviewId: 'test-id',
+      })
+    case 'report-admin':
+      return buildReportAdminHtml({
+        reason: 'SAFETY_CONCERN',
+        details: 'The vehicle had a cracked windshield and the driver was using their phone while driving on the highway.',
+        reporterEmail: 'concerned@example.com',
+        driverDisplayName: "John's Taxi Service",
+        driverSlug: 'johns-taxi-service',
       })
     default:
       return '<p>Template not found</p>'

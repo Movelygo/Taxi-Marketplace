@@ -225,11 +225,13 @@ export class DriverRepository {
     const orderBy: Prisma.DriverOrderByWithRelationInput[] =
       sort === 'newest'
         ? [{ createdAt: 'desc' }]
-        : [
-            { isFeatured: 'desc' },
-            { featuredOrder: 'asc' },
-            { createdAt: 'desc' },
-          ]
+        : sort === 'rating'
+          ? [{ isFeatured: 'desc' }, { reviews: { _count: 'desc' } }]
+          : [
+              { isFeatured: 'desc' },
+              { featuredOrder: 'asc' },
+              { createdAt: 'desc' },
+            ]
 
     // Pagination
     const total = await prisma.driver.count({ where })
@@ -267,11 +269,27 @@ export class DriverRepository {
           orderBy: { sortOrder: 'asc' },
           take: 1,
         },
+        reviews: {
+          where: { status: 'APPROVED' },
+          select: { rating: true },
+        },
       },
     })
 
+    // Compute rating summary per driver and strip review data from output
+    const driversWithRating = drivers.map((d) => {
+      const { reviews, ...rest } = d
+      const count = reviews.length
+      const average = count > 0 ? reviews.reduce((s, r) => s + r.rating, 0) / count : 0
+      return {
+        ...rest,
+        rating: count >= 3 ? Math.round(average * 10) / 10 : null, // threshold per guidelines
+        reviewCount: count,
+      }
+    })
+
     return {
-      drivers,
+      drivers: driversWithRating,
       total,
       page: currentPage,
       pageSize,

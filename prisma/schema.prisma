@@ -81,6 +81,8 @@ model Driver {
   profileViews ProfileView[]
   leads        Lead[]
   photos       DriverPhoto[]
+  reviews      Review[]
+  reports      Report[]
 
   @@index([cityId, status, isFeatured])
   @@index([status, cityId])
@@ -232,4 +234,91 @@ model DriverPhoto {
 
   @@index([driverId, sortOrder])
   @@map("driver_photos")
+}
+
+// ── Reviews & Reports (Phase E — Trust layer) ───────────────────────
+
+// Customer reviews for drivers. No account required (per original vision free tier).
+// Anti-fraud: 1 review per driver per IP per 24h. All reviews enter PENDING.
+// Verified-contact badge: if reviewer's browser previously fired a lead-click.
+model Review {
+  id              String       @id @default(uuid())
+  driverId        String       @map("driver_id")
+  driver          Driver       @relation(fields: [driverId], references: [id], onDelete: Cascade)
+  rating          Int          // 1-5
+  text            String       @db.Text
+  reviewerName    String       @map("reviewer_name")
+  reviewerEmail   String       @map("reviewer_email")
+  ipHash          String       @map("ip_hash")
+  isVerifiedContact Boolean    @default(false) @map("is_verified_contact")
+  status          ReviewStatus @default(PENDING)
+
+  // Driver public response (1 per review)
+  driverResponse    String?    @db.Text @map("driver_response")
+  driverRespondedAt DateTime?  @map("driver_responded_at")
+
+  // Driver appeal / flag system
+  isFlaggedByDriver Boolean           @default(false) @map("is_flagged_by_driver")
+  flagReason         String?          @db.Text @map("flag_reason")
+  flaggedAt          DateTime?        @map("flagged_at")
+  flagStatus         ReviewFlagStatus? @map("flag_status")
+  flagResolvedBy     String?          @map("flag_resolved_by")
+  flagResolvedAt     DateTime?        @map("flag_resolved_at")
+
+  createdAt    DateTime   @default(now()) @map("created_at")
+  publishedAt  DateTime?  @map("published_at") // set when APPROVED
+  updatedAt    DateTime   @updatedAt @map("updated_at")
+
+  @@index([driverId, status, createdAt])
+  @@index([status, createdAt])
+  @@index([ipHash, driverId, createdAt])
+  @@index([isFlaggedByDriver, flagStatus])
+  @@map("reviews")
+}
+
+enum ReviewStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum ReviewFlagStatus {
+  FLAG_PENDING    // driver flagged, awaiting admin review
+  FLAG_DISMISSED  // admin reviewed the flag, review stays
+  FLAG_REMOVED    // admin agreed with flag, review removed
+}
+
+// Profile reports from customers/visitors. Rate-limited by ipHash.
+model Report {
+  id            String       @id @default(uuid())
+  driverId      String       @map("driver_id")
+  driver        Driver       @relation(fields: [driverId], references: [id], onDelete: Cascade)
+  reason        ReportReason
+  details       String       @db.Text
+  reporterEmail String?      @map("reporter_email")
+  ipHash        String       @map("ip_hash")
+  status        ReportStatus @default(NEW)
+  adminNotes    String?      @db.Text @map("admin_notes")
+  createdAt     DateTime     @default(now()) @map("created_at")
+  updatedAt     DateTime     @updatedAt @map("updated_at")
+
+  @@index([driverId, status, createdAt])
+  @@index([status, createdAt])
+  @@index([ipHash, driverId, createdAt])
+  @@map("reports")
+}
+
+enum ReportReason {
+  NOT_A_REAL_DRIVER
+  SAFETY_CONCERN
+  MISLEADING_PROFILE
+  INAPPROPRIATE_CONDUCT
+  OTHER
+}
+
+enum ReportStatus {
+  NEW
+  REVIEWED
+  DISMISSED
+  ACTION_TAKEN
 }

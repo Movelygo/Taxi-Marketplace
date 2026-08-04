@@ -40,7 +40,7 @@ export const driverSearchQuerySchema = z.object({
     firstValue,
     z.enum(['AVAILABLE', 'BUSY', 'OFFLINE']).optional(),
   ),
-  sort: z.preprocess(firstValue, z.enum(['featured', 'newest']).default('featured')),
+  sort: z.preprocess(firstValue, z.enum(['featured', 'newest', 'rating']).default('featured')),
   page: z.preprocess(
     (value) => {
       const normalized = firstValue(value)

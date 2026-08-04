@@ -12,7 +12,7 @@ export interface FilterState {
   paymentMethods: string[]
   minCapacity: string
   availabilityStatus: string
-  sort: 'featured' | 'newest'
+  sort: 'featured' | 'newest' | 'rating'
 }
 
 interface DirectoryFiltersProps {

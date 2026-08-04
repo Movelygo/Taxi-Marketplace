@@ -8,7 +8,7 @@ export interface DriverSearchParams {
   paymentMethods?: string[]
   minCapacity?: number
   availabilityStatus?: AvailabilityStatus
-  sort?: 'featured' | 'newest'
+  sort?: 'featured' | 'newest' | 'rating'
   page?: number
   pageSize?: number
 }
@@ -32,6 +32,8 @@ export interface DriverSearchResultItem {
   bio: string | null
   cityRel: { name: string; state: string } | null
   photos: { url: string; sortOrder: number }[]
+  rating: number | null
+  reviewCount: number
 }
 
 export interface DriverSearchResult {
@@ -42,6 +44,6 @@ export interface DriverSearchResult {
   totalPages: number
 }
 
-export type SortOption = 'featured' | 'newest'
+export type SortOption = 'featured' | 'newest' | 'rating'
 
 export const DEFAULT_PAGE_SIZE = 12
