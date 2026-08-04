@@ -154,10 +154,10 @@ export function SearchableSelect({
       {/* Search input / display */}
       <div
         onClick={handleOpen}
-        className={`w-full px-4 py-2.5 border rounded-lg bg-white cursor-pointer flex items-center justify-between gap-2 transition-all ${
+        className={`w-full px-4 py-2.5 border rounded-xl bg-white cursor-pointer flex items-center justify-between gap-2 transition-all ${
           isOpen
-            ? 'border-[#0B1F3D] ring-2 ring-[#0B1F3D]'
-            : 'border-gray-300 hover:border-gray-400'
+            ? 'border-[#0B1F3D] ring-4 ring-[#0B1F3D]/5'
+            : 'border-gray-200 hover:border-gray-300'
         } ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
       >
         <input
@@ -189,7 +189,7 @@ export function SearchableSelect({
       {isOpen && (
         <div
           ref={listRef}
-          className="absolute z-50 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg max-h-60 overflow-y-auto"
+          className="absolute z-50 w-full mt-2 bg-white border border-gray-100 rounded-2xl shadow-xl max-h-60 overflow-y-auto"
         >
           {filtered.length === 0 ? (
             <div className="px-4 py-6 text-center text-sm text-gray-400">{emptyMessage}</div>

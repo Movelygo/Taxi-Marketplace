@@ -82,99 +82,86 @@ export function GalleryUpload({ photos, limit }: GalleryUploadProps) {
   }
 
   return (
-    <div className="bg-white rounded-[40px] border border-gray-100 shadow-sm overflow-hidden">
-      <div className="p-8 lg:p-10 border-b border-gray-50 bg-gray-50/30">
-        <div className="flex items-center gap-2.5 mb-1.5 text-[#0B1F3D]">
-          <Car className="w-5 h-5" />
-          <h2 className="text-xl font-black tracking-tight">Vehicle Gallery</h2>
+    <div className="bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden">
+      <div className="p-6 border-b border-gray-50 bg-gray-50/30">
+        <div className="flex items-center gap-2 mb-0.5 text-[#0B1F3D]">
+          <Car className="w-4 h-4" />
+          <h2 className="text-lg font-black tracking-tight uppercase tracking-widest text-xs">Vehicle Gallery</h2>
         </div>
-        <p className="text-sm font-medium text-gray-500">
-          {localPhotos.length} of {limit} photos used · JPG, PNG, or WebP — max 5MB
+        <p className="text-[10px] font-medium text-gray-400">
+          {localPhotos.length} / {limit} slots used
         </p>
       </div>
 
-      <div className="p-8 lg:p-10 space-y-8">
+      <div className="p-6 space-y-6">
         {/* Photo grid */}
         {localPhotos.length > 0 && (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
             {localPhotos.map((photo, index) => (
-              <div key={photo.id} className="relative group rounded-3xl overflow-hidden border border-gray-100 shadow-sm bg-gray-50">
+              <div key={photo.id} className="relative group rounded-2xl overflow-hidden border border-gray-100 shadow-sm bg-gray-50">
                 <div className="relative aspect-video">
                   <Image
                     src={photo.url}
                     alt={`Vehicle photo ${index + 1}`}
                     fill
                     className="object-cover group-hover:scale-105 transition-transform duration-500"
-                    sizes="(max-width: 640px) 100vw, 33vw"
+                    sizes="(max-width: 640px) 50vw, 33vw"
                   />
                 </div>
 
                 {/* Overlays */}
-                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col justify-between p-3">
+                <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col justify-between p-2">
                   <div className="flex justify-between items-start">
-                    {/* Order controls */}
-                    <div className="flex gap-1.5">
+                    <div className="flex gap-1">
                       <button
                         type="button"
                         onClick={() => movePhoto(index, 'left')}
                         disabled={index === 0}
-                        className="w-8 h-8 bg-white/20 hover:bg-white/40 backdrop-blur-md rounded-xl flex items-center justify-center text-white disabled:opacity-30 transition-colors"
-                        aria-label="Move left"
+                        className="w-6 h-6 bg-white/20 hover:bg-white/40 backdrop-blur-md rounded-lg flex items-center justify-center text-white disabled:opacity-30 transition-colors"
                       >
-                        <ArrowLeft className="w-4 h-4" />
+                        <ArrowLeft className="w-3 h-3" />
                       </button>
                       <button
                         type="button"
                         onClick={() => movePhoto(index, 'right')}
                         disabled={index === localPhotos.length - 1}
-                        className="w-8 h-8 bg-white/20 hover:bg-white/40 backdrop-blur-md rounded-xl flex items-center justify-center text-white disabled:opacity-30 transition-colors"
-                        aria-label="Move right"
+                        className="w-6 h-6 bg-white/20 hover:bg-white/40 backdrop-blur-md rounded-lg flex items-center justify-center text-white disabled:opacity-30 transition-colors"
                       >
-                        <ArrowRight className="w-4 h-4" />
+                        <ArrowRight className="w-3 h-3" />
                       </button>
                     </div>
 
-                    {/* Delete */}
                     <div>
                       {confirmDelete === photo.id ? (
-                        <div className="flex items-center gap-1 bg-white rounded-xl p-1 shadow-xl animate-in zoom-in-95 duration-200">
+                        <div className="flex items-center gap-1 bg-white rounded-lg p-0.5 shadow-xl">
                           <button
                             type="button"
                             onClick={() => handleDelete(photo.id)}
-                            className="px-2 py-1 bg-red-600 text-white text-[10px] font-black uppercase tracking-wider rounded-lg hover:bg-red-700"
+                            className="px-1.5 py-0.5 bg-red-600 text-white text-[8px] font-black uppercase rounded-md"
                           >
-                            Delete
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => setConfirmDelete(null)}
-                            className="px-2 py-1 bg-gray-100 text-gray-700 text-[10px] font-black uppercase tracking-wider rounded-lg hover:bg-gray-200"
-                          >
-                            No
+                            Del
                           </button>
                         </div>
                       ) : (
                         <button
                           type="button"
                           onClick={() => setConfirmDelete(photo.id)}
-                          className="w-8 h-8 bg-red-500/20 hover:bg-red-500 backdrop-blur-md rounded-xl flex items-center justify-center text-white transition-colors"
-                          aria-label="Delete photo"
+                          className="w-6 h-6 bg-red-500/20 hover:bg-red-500 backdrop-blur-md rounded-lg flex items-center justify-center text-white transition-colors"
                         >
-                          <Trash2 className="w-4 h-4" />
+                          <Trash2 className="w-3 h-3" />
                         </button>
                       )}
                     </div>
                   </div>
 
-                  {/* Order badge */}
                   <div>
                     {index === 0 ? (
-                      <span className="px-3 py-1 bg-blue-500 text-white text-[10px] font-black uppercase tracking-widest rounded-lg shadow-lg">
-                        Cover Photo
+                      <span className="px-2 py-0.5 bg-blue-500 text-white text-[8px] font-black uppercase tracking-widest rounded-md shadow-lg">
+                        Cover
                       </span>
                     ) : (
-                      <span className="px-3 py-1 bg-white/20 text-white text-[10px] font-black uppercase tracking-widest rounded-lg backdrop-blur-md">
-                        Photo {index + 1}
+                      <span className="px-2 py-0.5 bg-white/20 text-white text-[8px] font-black uppercase tracking-widest rounded-md backdrop-blur-md">
+                        #{index + 1}
                       </span>
                     )}
                   </div>
@@ -199,38 +186,35 @@ export function GalleryUpload({ photos, limit }: GalleryUploadProps) {
               type="button"
               onClick={() => fileInputRef.current?.click()}
               disabled={uploading}
-              className="group relative w-full py-12 border-4 border-dashed border-gray-100 rounded-[32px] flex flex-col items-center justify-center gap-4 hover:border-[#0B1F3D]/20 hover:bg-blue-50/30 transition-all disabled:opacity-50"
+              className="group relative w-full py-8 border-2 border-dashed border-gray-100 rounded-2xl flex flex-col items-center justify-center gap-2 hover:border-[#0B1F3D]/20 hover:bg-blue-50/30 transition-all disabled:opacity-50"
             >
-              <div className="w-16 h-16 rounded-3xl bg-gray-50 flex items-center justify-center text-gray-400 group-hover:bg-[#0B1F3D] group-hover:text-white transition-all shadow-sm">
+              <div className="w-10 h-10 rounded-xl bg-gray-50 flex items-center justify-center text-gray-400 group-hover:bg-[#0B1F3D] group-hover:text-white transition-all">
                 {uploading ? (
-                  <Loader2 className="w-8 h-8 animate-spin" />
+                  <Loader2 className="w-5 h-5 animate-spin" />
                 ) : (
-                  <Plus className="w-8 h-8" />
+                  <Plus className="w-5 h-5" />
                 )}
               </div>
-              <div className="text-center px-4">
-                <p className="text-lg font-black text-gray-900 tracking-tight">
-                  {uploading ? 'Uploading...' : 'Add vehicle photos'}
+              <div className="text-center px-2">
+                <p className="text-sm font-black text-gray-900 tracking-tight">
+                  {uploading ? 'Uploading...' : 'Add photo'}
                 </p>
-                <p className="text-sm font-medium text-gray-500 mt-1">
-                  Click to browse · {remaining} slots remaining
+                <p className="text-[10px] font-medium text-gray-400">
+                  {remaining} remaining
                 </p>
               </div>
             </button>
           </div>
         ) : (
-          <div className="p-8 rounded-[32px] bg-gray-50 border border-gray-100 text-center">
-            <Info className="w-8 h-8 text-gray-400 mx-auto mb-3" />
-            <h3 className="text-lg font-black text-gray-900 tracking-tight">Photo limit reached</h3>
-            <p className="text-sm font-medium text-gray-500 mt-1 max-w-xs mx-auto">
-              Remove a photo to add a new one. Pro accounts get up to 7 photos.
-            </p>
+          <div className="p-6 rounded-2xl bg-gray-50 border border-gray-100 text-center">
+            <Info className="w-6 h-6 text-gray-300 mx-auto mb-2" />
+            <p className="text-xs font-black text-gray-400 uppercase tracking-widest">Limit reached</p>
           </div>
         )}
 
         {error && (
-          <div className="p-4 bg-red-50 border border-red-100 rounded-2xl flex items-center gap-3 text-red-700 font-bold text-sm shadow-sm">
-            <Info className="w-4 h-4 flex-shrink-0" />
+          <div className="p-3 bg-red-50 border border-red-100 rounded-xl flex items-center gap-2 text-red-700 font-bold text-[10px]">
+            <Info className="w-3 h-3 flex-shrink-0" />
             <p>{error}</p>
           </div>
         )}

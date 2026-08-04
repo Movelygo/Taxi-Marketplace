@@ -18,52 +18,52 @@ export function ProfileCompletenessCard({ completeness, compact = false }: Profi
   }
 
   return (
-    <div className="bg-white rounded-[32px] border border-gray-100 shadow-sm overflow-hidden">
-      <div className="p-8">
-        <div className="flex flex-col sm:flex-row items-center sm:items-start gap-8">
+    <div className="bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden">
+      <div className="p-6">
+        <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6">
           <CompletenessRing percentage={percentage} />
 
           <div className="flex-1 text-center sm:text-left min-w-0">
-            <div className="flex flex-col sm:flex-row items-center gap-3 mb-2">
-              <h3 className="text-xl font-black text-gray-900 tracking-tight">Profile completeness</h3>
+            <div className="flex flex-col sm:flex-row items-center gap-2 mb-1">
+              <h3 className="text-lg font-black text-gray-900 tracking-tight">Profile completeness</h3>
               {isComplete && (
-                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-green-50 text-green-700 text-[10px] font-black uppercase tracking-wider border border-green-100">
-                  <CheckCircle2 className="w-3.5 h-3.5" />
+                <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-green-50 text-green-700 text-[10px] font-black uppercase tracking-wider border border-green-100">
+                  <CheckCircle2 className="w-3 h-3" />
                   Complete
                 </span>
               )}
             </div>
-            <p className="text-gray-600 font-medium leading-relaxed max-w-xl">
+            <p className="text-sm text-gray-600 font-medium leading-relaxed max-w-xl">
               {isComplete
                 ? 'Your profile has everything customers need. Ready to connect with passengers!'
-                : `${completedCount} of ${totalCount} sections complete. A 100% complete profile gets up to 3x more customer inquiries.`}
+                : `${completedCount} of ${totalCount} sections complete. A 100% complete profile gets up to 3x more leads.`}
             </p>
           </div>
         </div>
       </div>
 
       {!isComplete && missing.length > 0 && (
-        <div className="border-t border-gray-50 bg-[#FBFBFC] px-8 py-6">
-          <p className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-4">
+        <div className="border-t border-gray-50 bg-[#FBFBFC] px-6 py-5">
+          <p className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-3">
             Next steps to 100%
           </p>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
             {missing.map((item) => (
               <Link
                 key={item.key}
                 href={item.href}
-                className="group flex items-center justify-between p-4 bg-white border border-gray-100 rounded-2xl hover:border-[#0B1F3D] hover:shadow-md transition-all"
+                className="group flex items-center justify-between p-3 bg-white border border-gray-100 rounded-xl hover:border-[#0B1F3D] hover:shadow-md transition-all"
               >
-                <div className="flex items-center gap-4">
-                  <div className="w-3 h-3 rounded-full border-4 border-amber-400 flex-shrink-0" />
+                <div className="flex items-center gap-3">
+                  <div className="w-2.5 h-2.5 rounded-full border-4 border-amber-400 flex-shrink-0" />
                   <div>
-                    <p className="text-sm font-bold text-gray-900 group-hover:text-[#0B1F3D]">
+                    <p className="text-xs font-bold text-gray-900 group-hover:text-[#0B1F3D]">
                       {item.label}
                     </p>
-                    <p className="text-[10px] font-medium text-gray-500">{item.hint}</p>
+                    <p className="text-[9px] font-medium text-gray-500">{item.hint}</p>
                   </div>
                 </div>
-                <ChevronRight className="w-4 h-4 text-gray-300 group-hover:text-[#0B1F3D] transition-colors" />
+                <ChevronRight className="w-3.5 h-3.5 text-gray-300 group-hover:text-[#0B1F3D] transition-colors" />
               </Link>
             ))}
           </div>
@@ -78,30 +78,30 @@ export function ProfileCompletenessCard({ completeness, compact = false }: Profi
  * Uses SVG strokeDasharray for a clean stroke effect.
  */
 function CompletenessRing({ percentage }: { percentage: number }) {
-  const radius = 38
+  const radius = 30
   const circumference = 2 * Math.PI * radius
   const offset = circumference - (percentage / 100) * circumference
   const isComplete = percentage === 100
 
   return (
-    <div className="relative w-24 h-24 sm:w-28 sm:h-24 flex-shrink-0">
-      <svg className="w-full h-full -rotate-90" viewBox="0 0 100 100">
+    <div className="relative w-16 h-16 sm:w-20 sm:h-20 flex-shrink-0">
+      <svg className="w-full h-full -rotate-90" viewBox="0 0 80 80">
         <circle
-          cx="50"
-          cy="50"
+          cx="40"
+          cy="40"
           r={radius}
           fill="none"
           stroke="currentColor"
-          strokeWidth="10"
+          strokeWidth="8"
           className="text-gray-50"
         />
         <circle
-          cx="50"
-          cy="50"
+          cx="40"
+          cy="40"
           r={radius}
           fill="none"
           stroke="currentColor"
-          strokeWidth="10"
+          strokeWidth="8"
           strokeLinecap="round"
           strokeDasharray={circumference}
           strokeDashoffset={offset}
@@ -110,7 +110,7 @@ function CompletenessRing({ percentage }: { percentage: number }) {
         />
       </svg>
       <div className="absolute inset-0 flex items-center justify-center">
-        <span className={`text-xl font-black tracking-tighter ${isComplete ? 'text-green-600' : 'text-[#0B1F3D]'}`}>
+        <span className={`text-sm font-black tracking-tighter ${isComplete ? 'text-green-600' : 'text-[#0B1F3D]'}`}>
           {percentage}%
         </span>
       </div>

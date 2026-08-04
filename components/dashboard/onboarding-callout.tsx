@@ -65,22 +65,22 @@ export function OnboardingCallout({ tone, title, description, cta, eyebrow }: On
   const isDark = tone === 'action'
 
   return (
-    <div className={`rounded-[32px] border p-8 ${styles.container} transition-all`}>
-      <div className="flex flex-col sm:flex-row sm:items-center gap-6">
-        <div className={`w-14 h-14 rounded-2xl ${styles.iconBg} flex items-center justify-center flex-shrink-0 shadow-sm`}>
-          <Icon className={`w-7 h-7 ${styles.iconColor}`} />
+    <div className={`rounded-3xl border p-6 ${styles.container} transition-all`}>
+      <div className="flex flex-col sm:flex-row sm:items-center gap-5">
+        <div className={`w-12 h-12 rounded-2xl ${styles.iconBg} flex items-center justify-center flex-shrink-0 shadow-sm`}>
+          <Icon className={`w-6 h-6 ${styles.iconColor}`} />
         </div>
         
         <div className="flex-1 min-w-0">
           {eyebrow && (
-            <p className={`text-[10px] font-black uppercase tracking-[0.2em] mb-2 ${styles.eyebrow}`}>
+            <p className={`text-[10px] font-black uppercase tracking-[0.2em] mb-1 ${styles.eyebrow}`}>
               {eyebrow}
             </p>
           )}
-          <h3 className={`text-xl font-black mb-1 tracking-tight ${isDark ? 'text-white' : 'text-gray-900'}`}>
+          <h3 className={`text-lg font-black mb-0.5 tracking-tight ${isDark ? 'text-white' : 'text-gray-900'}`}>
             {title}
           </h3>
-          <p className={`text-base font-medium opacity-80 leading-relaxed ${isDark ? 'text-white/80' : 'text-gray-600'}`}>
+          <p className={`text-sm font-medium opacity-80 leading-relaxed ${isDark ? 'text-white/80' : 'text-gray-600'}`}>
             {description}
           </p>
         </div>
@@ -89,10 +89,10 @@ export function OnboardingCallout({ tone, title, description, cta, eyebrow }: On
           <div className="flex-shrink-0">
             <Link
               href={cta.href}
-              className={`inline-flex items-center gap-2 px-6 py-3 rounded-2xl font-black text-sm transition-all transform active:scale-95 shadow-lg ${styles.ctaClass}`}
+              className={`inline-flex items-center gap-2 px-5 py-2.5 rounded-xl font-black text-xs transition-all transform active:scale-95 shadow-md ${styles.ctaClass}`}
             >
               {cta.label}
-              <ChevronRight className="w-4 h-4" />
+              <ChevronRight className="w-3.5 h-3.5" />
             </Link>
           </div>
         )}

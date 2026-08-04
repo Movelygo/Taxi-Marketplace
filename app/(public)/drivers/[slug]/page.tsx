@@ -54,9 +54,9 @@ export async function generateMetadata({ params }: DriverProfilePageProps): Prom
 
 function SectionTitle({ title, icon: Icon }: { title: string, icon?: any }) {
   return (
-    <div className="flex items-center gap-2 mb-4">
+    <div className="flex items-center gap-2.5 mb-5">
       {Icon && <Icon className="w-5 h-5 text-[#0B1F3D]" />}
-      <h2 className="text-xl font-bold text-gray-900">{title}</h2>
+      <h2 className="text-xl font-black text-gray-900 tracking-tight">{title}</h2>
     </div>
   )
 }
@@ -128,7 +128,7 @@ export default async function DriverProfilePage({ params }: DriverProfilePagePro
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12">
           
           {/* Main Content (Left) */}
-          <div className="lg:col-span-8 space-y-8 lg:space-y-10">
+          <div className="lg:col-span-8 space-y-6 lg:space-y-8">
             
             {/* Header / Identity Block */}
             <div className="flex flex-col sm:flex-row items-start gap-6 sm:gap-8">

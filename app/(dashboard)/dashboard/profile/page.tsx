@@ -35,10 +35,10 @@ export default async function ProfilePage() {
 
   return (
     <div className="min-h-screen bg-[#F8F9FA]">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-10 lg:py-14">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8 lg:py-10">
         <Link
           href="/dashboard"
-          className="inline-flex items-center gap-1.5 text-xs font-black text-gray-400 hover:text-[#0B1F3D] transition-colors mb-8 group uppercase tracking-widest"
+          className="inline-flex items-center gap-1.5 text-xs font-black text-gray-400 hover:text-[#0B1F3D] transition-colors mb-6 group uppercase tracking-widest"
         >
           <svg className="w-4 h-4 group-hover:-translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M15 19l-7-7 7-7" />
@@ -46,11 +46,11 @@ export default async function ProfilePage() {
           Back to overview
         </Link>
 
-        <div className="mb-10 lg:mb-14">
+        <div className="mb-8 lg:mb-10">
           <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black text-gray-900 tracking-tight leading-tight">
             {profile ? 'Edit business profile' : 'Create your profile'}
           </h1>
-          <p className="text-lg font-medium text-gray-500 mt-2 max-w-2xl leading-relaxed">
+          <p className="text-base font-medium text-gray-500 mt-2 max-w-2xl leading-relaxed">
             {profile
               ? 'Update your driver information and manage your public presence.'
               : 'Set up your driver profile to start connecting with customers.'}
