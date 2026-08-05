@@ -11,6 +11,9 @@ export interface DriverSearchParams {
   sort?: 'featured' | 'newest' | 'rating'
   page?: number
   pageSize?: number
+  pickup?: string
+  destination?: string
+  exactRoute?: boolean
 }
 
 export interface DriverSearchResultItem {

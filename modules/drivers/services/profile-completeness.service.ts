@@ -29,7 +29,7 @@ export interface CompletenessResult {
 export class ProfileCompletenessService {
   private static readonly MIN_BIO_LENGTH = 40
 
-  static evaluate(driver: Driver): CompletenessResult {
+  static evaluate(driver: Driver, serviceAreaCount = 0): CompletenessResult {
     const items: CompletenessItem[] = [
       {
         key: 'profileImage',
@@ -76,9 +76,9 @@ export class ProfileCompletenessService {
       {
         key: 'serviceArea',
         label: 'Service area',
-        hint: 'The areas you cover (e.g. Baltimore, BWI, DC).',
+        hint: 'The cities you cover.',
         href: '/dashboard/profile',
-        isComplete: !!driver.serviceAreaText && driver.serviceAreaText.trim().length >= 10,
+        isComplete: serviceAreaCount > 0,
       },
       {
         key: 'vehicleType',

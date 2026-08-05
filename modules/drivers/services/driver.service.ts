@@ -8,7 +8,7 @@ import type { Driver, AvailabilityStatus, City, ProfileAttribute } from '@prisma
 export class DriverService {
   static async createProfile(userId: string, input: CreateDriverInput): Promise<Driver> {
     const languages = input.languages.split(',').map(lang => lang.trim()).filter(Boolean)
-    
+
     const slug = await this.generateUniqueSlug(input.displayName)
 
     // Resolve cityId from city name (case-insensitive match)
@@ -18,7 +18,7 @@ export class DriverService {
       cityId = cityRecord.id
     }
 
-    return await DriverRepository.create({
+    const driver = await DriverRepository.create({
       userId,
       slug,
       displayName: input.displayName,
@@ -26,7 +26,6 @@ export class DriverService {
       whatsappNumber: input.whatsappNumber,
       cityId,
       city: input.city,
-      serviceAreaText: input.serviceAreaText,
       vehicleType: input.vehicleType,
       vehicleMake: input.vehicleMake,
       vehicleModel: input.vehicleModel,
@@ -40,6 +39,19 @@ export class DriverService {
       bio: input.bio,
       availabilityStatus: input.availabilityStatus as AvailabilityStatus,
     })
+
+    // Create ServiceArea records
+    if (input.serviceAreaCityIds.length > 0) {
+      await prisma.serviceArea.createMany({
+        data: input.serviceAreaCityIds.map(cityId => ({
+          driverId: driver.id,
+          cityId,
+        })),
+        skipDuplicates: true,
+      })
+    }
+
+    return driver
   }
 
   static async updateProfile(userId: string, input: UpdateDriverInput): Promise<Driver> {
@@ -53,7 +65,22 @@ export class DriverService {
       const cityRecord = await DriverRepository.findCityByName(input.city)
       if (cityRecord) updateData.cityId = cityRecord.id
     }
-    if (input.serviceAreaText !== undefined) updateData.serviceAreaText = input.serviceAreaText
+    if (input.serviceAreaCityIds !== undefined) {
+      // Replace all service areas: delete existing, create new
+      const existingDriver = await DriverRepository.findByUserId(userId)
+      if (existingDriver) {
+        await prisma.serviceArea.deleteMany({ where: { driverId: existingDriver.id } })
+        if (input.serviceAreaCityIds.length > 0) {
+          await prisma.serviceArea.createMany({
+            data: input.serviceAreaCityIds.map(cityId => ({
+              driverId: existingDriver.id,
+              cityId,
+            })),
+            skipDuplicates: true,
+          })
+        }
+      }
+    }
     if (input.vehicleType !== undefined) updateData.vehicleType = input.vehicleType
     if (input.vehicleMake !== undefined) updateData.vehicleMake = input.vehicleMake || null
     if (input.vehicleModel !== undefined) updateData.vehicleModel = input.vehicleModel || null

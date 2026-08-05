@@ -40,7 +40,8 @@ model City {
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
-  drivers Driver[]
+  drivers      Driver[]
+  serviceAreas ServiceArea[]
 
   @@map("cities")
 }
@@ -57,7 +58,6 @@ model Driver {
   cityId             String?            @map("city_id")
   city               String             // legacy free-text; kept for migration safety
   cityRel            City?              @relation(fields: [cityId], references: [id])
-  serviceAreaText    String             @map("service_area_text") @db.Text
   vehicleType        String             @map("vehicle_type")        // category: Sedan / SUV-Minivan / Van / Luxury
   vehicleMake        String?            @map("vehicle_make")
   vehicleModel       String?            @map("vehicle_model")
@@ -83,6 +83,7 @@ model Driver {
   photos       DriverPhoto[]
   reviews      Review[]
   reports      Report[]
+  serviceAreas ServiceArea[]
 
   @@index([cityId, status, isFeatured])
   @@index([status, cityId])
@@ -91,6 +92,22 @@ model Driver {
   @@index([slug])
   @@index([userId])
   @@map("drivers")
+}
+
+// Structured service area — replaces free-text serviceAreaText
+// Links drivers to the cities they serve
+model ServiceArea {
+  id        String   @id @default(uuid())
+  driverId  String   @map("driver_id")
+  driver    Driver   @relation(fields: [driverId], references: [id], onDelete: Cascade)
+  cityId    String   @map("city_id")
+  city      City     @relation(fields: [cityId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@unique([driverId, cityId])
+  @@index([driverId])
+  @@index([cityId])
+  @@map("service_areas")
 }
 
 // Admin-managed catalog of amenities and payment methods

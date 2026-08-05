@@ -13,6 +13,7 @@ interface ProfileClientProps {
   paymentMethods?: ProfileAttribute[]
   photos?: DriverPhoto[]
   photoLimit?: number
+  serviceAreaCityIds?: string[]
 }
 
 export function ProfileClient({
@@ -22,6 +23,7 @@ export function ProfileClient({
   paymentMethods = [],
   photos = [],
   photoLimit = 2,
+  serviceAreaCityIds = [],
 }: ProfileClientProps) {
   const [formBusy, setFormBusy] = useState(false)
   const [uploadBusy, setUploadBusy] = useState(false)
@@ -37,6 +39,7 @@ export function ProfileClient({
           cities={cities}
           amenities={amenities}
           paymentMethods={paymentMethods}
+          serviceAreaCityIds={serviceAreaCityIds}
         />
 
         {profile && (

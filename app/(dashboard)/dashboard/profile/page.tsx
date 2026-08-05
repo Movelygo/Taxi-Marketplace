@@ -28,9 +28,17 @@ export default async function ProfilePage() {
 
   let photos: DriverPhoto[] = []
   let photoLimit = 2
+  let serviceAreaCityIds: string[] = []
   if (profile) {
     photos = await GalleryService.getByDriverId(profile.id)
     photoLimit = await GalleryService.getPhotoLimit()
+    // Fetch current service area city IDs
+    const { prisma } = await import('@/lib/db/prisma')
+    const areas = await prisma.serviceArea.findMany({
+      where: { driverId: profile.id },
+      select: { cityId: true },
+    })
+    serviceAreaCityIds = areas.map(a => a.cityId)
   }
 
   return (
@@ -64,6 +72,7 @@ export default async function ProfilePage() {
           paymentMethods={paymentMethods}
           photos={photos}
           photoLimit={photoLimit}
+          serviceAreaCityIds={serviceAreaCityIds}
         />
       </div>
     </div>

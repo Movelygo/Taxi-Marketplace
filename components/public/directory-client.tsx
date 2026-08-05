@@ -29,6 +29,9 @@ const EMPTY_FILTERS: FilterState = {
   minCapacity: '',
   availabilityStatus: '',
   sort: 'featured',
+  pickup: '',
+  destination: '',
+  exactRoute: false,
 }
 
 function filtersToParams(filters: FilterState, page: number): URLSearchParams {
@@ -39,6 +42,9 @@ function filtersToParams(filters: FilterState, page: number): URLSearchParams {
   if (filters.minCapacity) params.set('minCapacity', filters.minCapacity)
   if (filters.availabilityStatus) params.set('availabilityStatus', filters.availabilityStatus)
   if (filters.sort !== 'featured') params.set('sort', filters.sort)
+  if (filters.pickup) params.set('pickup', filters.pickup)
+  if (filters.destination) params.set('destination', filters.destination)
+  if (filters.exactRoute) params.set('exactRoute', 'true')
   filters.amenities.forEach((a) => params.append('amenities', a))
   filters.paymentMethods.forEach((p) => params.append('paymentMethods', p))
   if (page > 1) params.set('page', String(page))

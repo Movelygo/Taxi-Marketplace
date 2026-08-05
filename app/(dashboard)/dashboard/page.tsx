@@ -40,7 +40,20 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
   const params = await searchParams
   const profile = await DriverService.getProfile(user.id)
 
-  const completeness = profile ? ProfileCompletenessService.evaluate(profile) : null
+  // Get service area count for completeness scoring
+  let serviceAreaCount = 0
+  let serviceAreaNames: string[] = []
+  if (profile) {
+    const { prisma } = await import('@/lib/db/prisma')
+    const areas = await prisma.serviceArea.findMany({
+      where: { driverId: profile.id },
+      select: { cityId: true, city: { select: { name: true } } },
+    })
+    serviceAreaCount = areas.length
+    serviceAreaNames = areas.map(a => a.city.name)
+  }
+
+  const completeness = profile ? ProfileCompletenessService.evaluate(profile, serviceAreaCount) : null
   const metrics = profile ? await DriverMetricsService.getMetrics(profile.id) : null
   const callout = buildOnboardingCallout(profile, completeness?.percentage ?? 0)
 
@@ -122,7 +135,7 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
               </div>
               <div className="p-6 lg:p-8 flex-1">
                 {profile ? (
-                  <ProfileSummary profile={profile} />
+                  <ProfileSummary profile={profile} serviceAreaNames={serviceAreaNames} />
                 ) : (
                   <NoProfileEmptyState />
                 )}
@@ -227,7 +240,7 @@ function QuickAction({ href, title, icon: Icon }: { href: string; title: string;
   )
 }
 
-function ProfileSummary({ profile }: { profile: Driver & { cityRel?: { name: string; state: string } | null } }) {
+function ProfileSummary({ profile, serviceAreaNames }: { profile: Driver & { cityRel?: { name: string; state: string } | null }; serviceAreaNames?: string[] }) {
   const statusColor = {
     PENDING: 'bg-amber-50 text-amber-700 border-amber-100',
     APPROVED: 'bg-green-50 text-green-700 border-green-100',
@@ -274,7 +287,7 @@ function ProfileSummary({ profile }: { profile: Driver & { cityRel?: { name: str
           <DetailRow label="Phone" value={profile.phone} />
           <DetailRow label="WhatsApp" value={profile.whatsappNumber} />
           <DetailRow label="Availability" value={profile.availabilityStatus === 'AVAILABLE' ? 'Online' : 'Offline'} />
-          <DetailRow label="Service Area" value={profile.serviceAreaText} truncate />
+          <DetailRow label="Service Area" value={(serviceAreaNames && serviceAreaNames.length > 0) ? serviceAreaNames.join(', ') : 'Not set'} truncate />
         </div>
         
         <div className="pt-6">

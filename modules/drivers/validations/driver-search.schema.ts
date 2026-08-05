@@ -48,6 +48,12 @@ export const driverSearchQuerySchema = z.object({
     },
     z.number().int().min(1).max(1000),
   ),
+  pickup: optionalString(100),
+  destination: optionalString(100),
+  exactRoute: z.preprocess(
+    (value) => firstValue(value) === 'true' || firstValue(value) === '1',
+    z.boolean().optional(),
+  ),
 })
 
 export type DriverSearchQuery = z.infer<typeof driverSearchQuerySchema>

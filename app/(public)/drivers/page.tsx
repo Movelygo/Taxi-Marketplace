@@ -32,6 +32,9 @@ export default async function DriversPage({ searchParams }: DriversPageProps) {
     minCapacity: query.minCapacity ? String(query.minCapacity) : '',
     availabilityStatus: query.availabilityStatus || '',
     sort: query.sort,
+    pickup: query.pickup || '',
+    destination: query.destination || '',
+    exactRoute: query.exactRoute || false,
   }
 
   // Fetch all directory data in a single consolidated call

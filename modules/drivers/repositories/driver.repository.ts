@@ -18,10 +18,10 @@ export function buildDriverSearchWhere(params: DriverSearchParams): Prisma.Drive
         { vehicleMake: { contains: term, mode: 'insensitive' } },
         { vehicleModel: { contains: term, mode: 'insensitive' } },
         { vehicleType: { contains: term, mode: 'insensitive' } },
-        { serviceAreaText: { contains: term, mode: 'insensitive' } },
         { bio: { contains: term, mode: 'insensitive' } },
         { city: { contains: term, mode: 'insensitive' } },
         { cityRel: { name: { contains: term, mode: 'insensitive' } } },
+        { serviceAreas: { some: { city: { name: { contains: term, mode: 'insensitive' } } } } },
       ],
     })
   }
@@ -35,8 +35,6 @@ export function buildDriverSearchWhere(params: DriverSearchParams): Prisma.Drive
       ],
     })
   }
-
-  if (and.length > 0) where.AND = and
 
   // Vehicle type filter
   if (params.vehicleType) where.vehicleType = { equals: params.vehicleType, mode: 'insensitive' }
@@ -53,6 +51,37 @@ export function buildDriverSearchWhere(params: DriverSearchParams): Prisma.Drive
   // Availability status
   if (params.availabilityStatus) where.availabilityStatus = params.availabilityStatus
 
+  // Trip intent filter: pickup/destination matching against ServiceArea
+  const tripCities: string[] = []
+  if (params.pickup?.trim()) tripCities.push(params.pickup.trim())
+  if (params.destination?.trim()) tripCities.push(params.destination.trim())
+
+  if (tripCities.length > 0) {
+    if (params.exactRoute && tripCities.length === 2) {
+      // AND: driver must serve BOTH pickup AND destination
+      and.push({
+        AND: tripCities.map(cityName => ({
+          serviceAreas: {
+            some: {
+              city: { name: { equals: cityName, mode: 'insensitive' } },
+            },
+          },
+        })),
+      })
+    } else {
+      // OR: driver serves at least one of the trip cities
+      and.push({
+        serviceAreas: {
+          some: {
+            city: { name: { in: tripCities, mode: 'insensitive' } },
+          },
+        },
+      })
+    }
+  }
+
+  if (and.length > 0) where.AND = and
+
   return where
 }
 
@@ -65,7 +94,6 @@ export class DriverRepository {
     whatsappNumber: string
     cityId?: string
     city: string
-    serviceAreaText: string
     vehicleType: string
     vehicleMake?: string | null
     vehicleModel?: string | null
@@ -110,7 +138,6 @@ export class DriverRepository {
       whatsappNumber?: string
       cityId?: string
       city?: string
-      serviceAreaText?: string
       vehicleType?: string
       vehicleMake?: string | null
       vehicleModel?: string | null
@@ -159,6 +186,14 @@ export class DriverRepository {
             name: true,
             state: true,
           },
+        },
+        serviceAreas: {
+          include: {
+            city: {
+              select: { name: true, state: true },
+            },
+          },
+          orderBy: { city: { name: 'asc' } },
         },
       },
     })

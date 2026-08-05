@@ -156,7 +156,17 @@ export default async function AdminDriverDetailPage({ params }: PageProps) {
                   </div>
                   <div className="md:col-span-2">
                     <p className="text-xs font-semibold text-gray-600 uppercase tracking-wide mb-1">Service Area</p>
-                    <p className="text-sm text-gray-900">{driver.serviceAreaText}</p>
+                    {(driver as any).serviceAreas && (driver as any).serviceAreas.length > 0 ? (
+                      <div className="flex flex-wrap gap-1.5">
+                        {(driver as any).serviceAreas.map((sa: any) => (
+                          <span key={sa.cityId} className="px-2 py-0.5 bg-gray-100 rounded text-xs font-medium text-gray-700">
+                            {sa.city.name}, {sa.city.state}
+                          </span>
+                        ))}
+                      </div>
+                    ) : (
+                      <p className="text-sm text-gray-400">No service areas set</p>
+                    )}
                   </div>
                   <div className="md:col-span-2">
                     <p className="text-xs font-semibold text-gray-600 uppercase tracking-wide mb-1">Languages</p>

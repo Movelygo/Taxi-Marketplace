@@ -40,7 +40,9 @@ import {
   Loader2,
   Upload,
   ArrowLeft,
-  Flag
+  Flag,
+  X,
+  Check
 } from 'lucide-react'
 
 export const AMENITY_ICONS: Record<string, any> = {
@@ -94,5 +96,7 @@ export {
   Loader2,
   Upload,
   ArrowLeft,
-  Flag
+  Flag,
+  X,
+  Check
 }

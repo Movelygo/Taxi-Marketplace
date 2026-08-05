@@ -6,6 +6,7 @@ import { createProfile } from '@/modules/drivers/actions/create-profile'
 import { updateProfile } from '@/modules/drivers/actions/update-profile'
 import { VEHICLE_CATEGORIES } from '@/modules/drivers/constants/profile-attributes'
 import { SearchableSelect } from '@/components/ui/searchable-select'
+import { ServiceAreaSelect } from '@/components/drivers/service-area-select'
 import { 
   User, 
   Car, 
@@ -44,6 +45,7 @@ interface ProfileFormProps {
   cities?: City[]
   amenities?: ProfileAttribute[]
   paymentMethods?: ProfileAttribute[]
+  serviceAreaCityIds?: string[]
 }
 
 function FieldError({ state, field }: { state: any; field: string }) {
@@ -77,6 +79,7 @@ export function ProfileForm({
   cities = [],
   amenities = [],
   paymentMethods = [],
+  serviceAreaCityIds = [],
 }: ProfileFormProps) {
   const isUpdate = !!profile
   const action = isUpdate ? updateProfile : createProfile
@@ -172,16 +175,15 @@ export function ProfileForm({
                 </div>
 
                 <div className="space-y-1.5">
-                  <Label htmlFor="serviceAreaText">Service Areas *</Label>
-                  <Input
-                    id="serviceAreaText"
-                    name="serviceAreaText"
-                    type="text"
-                    placeholder="e.g. Baltimore, DC"
-                    defaultValue={profile?.serviceAreaText}
-                    required
+                  <Label htmlFor="serviceAreaCityIds">Service Areas *</Label>
+                  <ServiceAreaSelect
+                    cities={cities}
+                    selectedCityIds={serviceAreaCityIds}
+                    driverCityId={profile?.cityId}
+                    driverCityName={profile?.city}
                   />
-                  <FieldError state={state} field="serviceAreaText" />
+                  <p className="text-xs text-gray-500">Select the cities where you offer service.</p>
+                  <FieldError state={state} field="serviceAreaCityIds" />
                 </div>
               </div>
 

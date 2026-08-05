@@ -12,6 +12,7 @@ type CreateProfileState = {
     whatsappNumber?: string[]
     city?: string[]
     serviceAreaText?: string[]
+    serviceAreaCityIds?: string[]
     vehicleType?: string[]
     vehicleMake?: string[]
     vehicleModel?: string[]
@@ -54,7 +55,7 @@ export async function createProfile(_prevState: CreateProfileState, formData: Fo
     phone: formData.get('phone') as string,
     whatsappNumber: formData.get('whatsappNumber') as string,
     city: formData.get('city') as string,
-    serviceAreaText: formData.get('serviceAreaText') as string,
+    serviceAreaCityIds: getFormArray(formData, 'serviceAreaCityIds'),
     vehicleType: formData.get('vehicleType') as string,
     vehicleMake: optionalString(formData, 'vehicleMake'),
     vehicleModel: optionalString(formData, 'vehicleModel'),

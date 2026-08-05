@@ -13,6 +13,7 @@ type UpdateProfileState = {
     whatsappNumber?: string[]
     city?: string[]
     serviceAreaText?: string[]
+    serviceAreaCityIds?: string[]
     vehicleType?: string[]
     vehicleMake?: string[]
     vehicleModel?: string[]
@@ -66,8 +67,8 @@ export async function updateProfile(_prevState: UpdateProfileState, formData: Fo
   const city = formData.get('city') as string
   if (city) rawData.city = city
 
-  const serviceAreaText = formData.get('serviceAreaText') as string
-  if (serviceAreaText) rawData.serviceAreaText = serviceAreaText
+  const serviceAreaCityIds = getFormArray(formData, 'serviceAreaCityIds')
+  if (serviceAreaCityIds.length > 0) rawData.serviceAreaCityIds = serviceAreaCityIds
 
   const vehicleType = formData.get('vehicleType') as string
   if (vehicleType) rawData.vehicleType = vehicleType

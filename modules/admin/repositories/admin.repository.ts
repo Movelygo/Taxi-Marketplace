@@ -12,6 +12,12 @@ export class AdminRepository {
   static async findDriverById(id: string): Promise<Driver | null> {
     return prisma.driver.findUnique({
       where: { id },
+      include: {
+        serviceAreas: {
+          include: { city: { select: { name: true, state: true } } },
+          orderBy: { city: { name: 'asc' } },
+        },
+      },
     })
   }
 

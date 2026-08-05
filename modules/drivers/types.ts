@@ -8,7 +8,7 @@ export interface CreateDriverInput {
   phone: string
   whatsappNumber: string
   city: string
-  serviceAreaText: string
+  serviceAreaCityIds: string[]
   vehicleType: string
   vehicleMake?: string
   vehicleModel?: string
@@ -27,7 +27,7 @@ export interface UpdateDriverInput {
   phone?: string
   whatsappNumber?: string
   city?: string
-  serviceAreaText?: string
+  serviceAreaCityIds?: string[]
   vehicleType?: string
   vehicleMake?: string
   vehicleModel?: string

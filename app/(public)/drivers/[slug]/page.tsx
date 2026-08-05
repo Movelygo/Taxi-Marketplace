@@ -46,7 +46,7 @@ export async function generateMetadata({ params }: DriverProfilePageProps): Prom
 
   return {
     title: `${driver.displayName} - ${driver.city} Driver | Movely`,
-    description: `${driver.displayName} offers ${driver.vehicleType} service in ${driver.city}. ${driver.serviceAreaText}. Book now!`,
+    description: `${driver.displayName} offers ${driver.vehicleType} service in ${driver.city}. ${(driver as any).serviceAreas?.map((sa: any) => sa.city.name).join(', ') || 'Contact for service area details'}.`,
     openGraph: {
       title: `${driver.displayName} - ${driver.city} Driver`,
       description: `${driver.vehicleType} service in ${driver.city}`,
@@ -301,9 +301,20 @@ export default async function DriverProfilePage({ params }: DriverProfilePagePro
               {/* Service Area Card */}
               <div className="bg-white rounded-3xl p-8 border border-gray-100 shadow-sm">
                 <SectionTitle title="Service Area" icon={MapPin} />
-                <p className="text-gray-700 font-semibold leading-relaxed mb-4">
-                  {driver.serviceAreaText}
-                </p>
+                {typedDriver.serviceAreas && typedDriver.serviceAreas.length > 0 ? (
+                  <div className="flex flex-wrap gap-2 mb-4">
+                    {typedDriver.serviceAreas.map((sa: any) => (
+                      <span
+                        key={sa.cityId}
+                        className="px-3 py-1.5 bg-gray-50 border border-gray-200 rounded-lg text-sm font-semibold text-gray-700"
+                      >
+                        {sa.city.name}
+                      </span>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-gray-500 text-sm mb-4">Contact driver for service area details.</p>
+                )}
                 <div className="flex items-center gap-2 text-xs font-black text-blue-600 uppercase tracking-widest">
                   <span>Based in {typedDriver.cityRel?.name || driver.city}</span>
                 </div>
