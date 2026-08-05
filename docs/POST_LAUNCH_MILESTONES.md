@@ -1,164 +1,15 @@
 # Post-Launch Milestones — Backlog
 
-**Status:** Planning — items to implement after MVP launch
+**Status:** Planning — items to implement AFTER MVP launch
 **Last updated:** 2026-08-03
 
----
-
-## PL-1 — Admin Driver Management
-
-**Goal:** Full CRUD control over driver profiles from the admin panel.
-
-### Items
-- [ ] Admin can edit all driver profile fields (name, phone, WhatsApp, city, vehicle info, bio, etc.)
-- [ ] Admin can upload/replace/delete driver profile images and gallery photos
-- [ ] Admin can change driver status (already exists) + edit featured status
-- [ ] Admin can view driver's reviews and reports from the driver detail page
-- [ ] Admin can reset a driver's password or resend confirmation email
-
-### Notes
-- The admin driver detail page already exists at `/admin/drivers/[id]` — extend it with edit forms
-- Use the same validation schemas as the driver-facing profile form
-- All changes should be logged (audit trail) for accountability
+> **Note:** Pre-MVP items (admin driver management, service area selects, vehicle selects, amenity/payment management, homepage city display, admin link to site) have been moved into their appropriate phases in `ROADMAP_MILESTONES.md` (Fase B and Fase G). This file only contains truly post-launch items.
 
 ---
 
-## PL-2 — Service Area City Select (Searchable)
+## PL-1 — Review System Enhancements
 
-**Goal:** Replace comma-separated text with a searchable multi-select for service areas.
-
-### Items
-- [ ] Replace `serviceAreaText` free-text with structured `ServiceArea` relation (driverId, cityId)
-- [ ] Searchable select component showing cities from the same state as the driver's home city first
-- [ ] Then show nearby/recommended cities in the same state
-- [ ] Then show the rest of the state's cities
-- [ ] Driver can select multiple cities (multi-select with chips/tags)
-- [ ] Admin can also edit service areas from PL-1
-
-### Data model
-```prisma
-model ServiceArea {
-  id        String @id @default(uuid())
-  driverId  String @map("driver_id")
-  driver    Driver @relation(fields: [driverId], references: [id], onDelete: Cascade)
-  cityId    String @map("city_id")
-  city      City   @relation(fields: [cityId], references: [id])
-  createdAt DateTime @default(now()) @map("created_at")
-
-  @@unique([driverId, cityId])
-  @@map("service_areas")
-}
-```
-
-### Migration
-- Keep `serviceAreaText` as fallback during migration
-- Parse existing text into ServiceArea records where possible
-- Eventually deprecate `serviceAreaText`
-
----
-
-## PL-3 — Vehicle Make/Model/Year Selects
-
-**Goal:** Reduce user errors by using structured selects for vehicle info.
-
-### Items
-- [ ] Vehicle make select (Toyota, Honda, Ford, Chevrolet, etc.) — searchable
-- [ ] Vehicle model select — filtered by selected make
-- [ ] Vehicle year select — dropdown with reasonable range (2000-current year)
-- [ ] Admin can manage the make/model catalog from the admin panel
-- [ ] Fallback: "Other" option with free text for unusual vehicles
-
-### Data model
-```prisma
-model VehicleMake {
-  id    String @id @default(uuid())
-  name  String @unique
-  models VehicleModel[]
-}
-
-model VehicleModel {
-  id      String @id @default(uuid())
-  makeId  String @map("make_id")
-  make    VehicleMake @relation(fields: [makeId], references: [id])
-  name    String
-  @@unique([makeId, name])
-}
-```
-
-### Notes
-- Seed with common makes/models for the US market
-- Can use a third-party API (e.g., NHTSA API) for comprehensive data
-- Keep `vehicleType` enum (Sedan, SUV, Van, Luxury) as-is — it's the category, not the make
-
----
-
-## PL-4 — Admin Amenity Management
-
-**Goal:** Full control over available amenities from the admin panel.
-
-### Items
-- [ ] Admin page at `/admin/amenities` to create/edit/deactivate amenities
-- [ ] Each amenity has: key, label, icon (from lucide-react set), category, sort order, active status
-- [ ] Changes reflect immediately in driver profile forms and directory filters
-- [ ] Deactivating an amenity hides it from new profiles but keeps it on existing profiles
-
-### Notes
-- `ProfileAttribute` model already exists with `AMENITY` category
-- The admin page just needs CRUD UI built on top of existing repository
-- Icon picker: show available lucide icons in a grid, admin selects one per amenity
-
----
-
-## PL-5 — Admin Payment Method Management
-
-**Goal:** Full control over available payment methods from the admin panel.
-
-### Items
-- [ ] Admin page at `/admin/payment-methods` (or combine with amenities as `/admin/attributes`)
-- [ ] Each payment method has: key, label, icon, active status, sort order
-- [ ] Changes reflect immediately in driver profile forms and directory filters
-
-### Notes
-- `ProfileAttribute` model already exists with `PAYMENT_METHOD` category
-- Can share the same admin page as amenities with a tab switcher
-
----
-
-## PL-6 — Admin Link to Main Site
-
-**Goal:** Easy navigation from admin panel to the public Movely site.
-
-### Items
-- [ ] Add "View site" link in admin sidebar (opens in new tab)
-- [ ] Add "View public profile" link on admin driver detail page
-- [ ] Add "View directory" link in admin sidebar
-
-### Notes
-- Simple but important for admin UX — currently no way to navigate to the public site from admin
-
----
-
-## PL-7 — Homepage City Display Management
-
-**Goal:** Admin control over which cities appear in the homepage "Service Areas" section.
-
-### Items
-- [ ] New field on `City` model: `showOnHomepage Boolean @default(false)`
-- [ ] Admin can toggle which cities appear on the homepage
-- [ ] Homepage section shows only cities with `showOnHomepage = true` AND at least 1 active driver
-- [ ] Admin page at `/admin/cities` (already exists) — add toggle column
-- [ ] Default behavior: auto-show cities with 3+ drivers (can be overridden by admin)
-
-### Notes
-- Currently all active cities appear on homepage — this gives admin granular control
-- During early stage with few drivers, admin can manually curate which cities to highlight
-- As the platform grows, the auto-show rule takes over
-
----
-
-## PL-8 — Review System Enhancements (from Phase E pending)
-
-**Goal:** Complete the review system with advanced features.
+**Goal:** Complete the review system with advanced features after launch.
 
 ### Items
 - [ ] Automatic suspension thresholds: warning email at <3.0 avg with 5+ reviews, auto-suspend at <2.5
@@ -169,12 +20,11 @@ model VehicleModel {
 
 ---
 
-## PL-9 — Research Items (Pending Investigation)
+## PL-2 — Trip Intent Filter (pickup/destination)
 
-### PL-9a — Pickup/Destination Input
-**Question:** How can we let customers input pickup/destination addresses without becoming a booking platform?
+**Goal:** Let customers input pickup/destination as FILTERS without becoming a booking platform.
 
-**Research findings:**
+### Research findings
 
 The core tension: Uber/Lyft use pickup+destination as the entry point because they ARE a booking platform. Movely is a **discovery directory** — our value is helping customers find the right driver, not booking the ride.
 
@@ -208,12 +58,13 @@ The core tension: Uber/Lyft use pickup+destination as the entry point because th
 
 ---
 
-### PL-9b — Homepage Strategy
-**Question:** Should the homepage be a driver search interface (like Uber) or keep the current landing page?
+## PL-3 — Homepage Strategy (hybrid search + landing)
 
-**Research findings:**
+**Goal:** Make the search bar the hero element while keeping landing page context for new visitors.
 
-The key insight from research: **Homepages and search pages serve different audiences.**
+### Research findings
+
+The key insight: **Homepages and search pages serve different audiences.**
 
 - **Homepage** = orientation + trust building (for new visitors who don't know what Movely is)
 - **Search/directory page** = conversion (for visitors who know what they want)
@@ -241,7 +92,7 @@ This way:
 - Returning visitors can search immediately (search bar is prominent)
 - We don't force everyone through a landing page when they just want to search
 
-**Navbar cleanup (immediate fix):**
+**Navbar cleanup (can be done pre-launch):**
 The current navbar shows "For Drivers" and "How It Works" on ALL pages including `/drivers`. These should be context-aware:
 - On `/drivers` and driver profile pages: hide "For Drivers" and "How It Works" (visitor is already in the directory)
 - On homepage: show all links
@@ -249,10 +100,11 @@ The current navbar shows "For Drivers" and "How It Works" on ALL pages including
 
 ---
 
-### PL-9c — Test Data Seeding
-**Question:** How to populate test reviews and drivers to verify functionality without touching production Supabase?
+## PL-4 — Test Data Seeding
 
-**Research findings:**
+**Goal:** Populate test reviews and drivers to verify functionality without touching production Supabase.
+
+### Research findings
 
 The project already has a `prisma/seed.ts` script that seeds cities, config, and profile attributes. We can **extend this script** to optionally seed test drivers + reviews.
 
@@ -262,7 +114,7 @@ The project already has a `prisma/seed.ts` script that seeds cities, config, and
 2. **Create test drivers** (8-10 fake drivers across different cities):
    - Use `prisma.user.create` with fake emails (test1@movely.test, etc.)
    - Create driver profiles with realistic data (vehicles, amenities, photos)
-   - Mark with a `isTestSeed: true` flag in a metadata field (or just use the `.test` email domain for cleanup)
+   - Mark with `.test` email domain for cleanup
 3. **Create test reviews** (3-7 reviews per driver, varied ratings):
    - Mix of APPROVED, PENDING, REJECTED statuses
    - Some with verified-contact badges

@@ -140,21 +140,29 @@ Phases are ordered by dependency. Each milestone lists purpose, scope, and rough
 **Purpose:** convert free-text profile data into structured, filterable, admin-manageable data. This is the prerequisite for real search (C), the profile redesign (D), and per-city SEO (H). Do this before UX work so we only redesign once.
 
 #### B1 — Cities as data + admin management — ~1.5 days
-- `City` model: `id, name, slug, state, isActive, sortOrder` (keep it minimal — no speculative fields)
+- `City` model: `id, name, slug, state, isActive, sortOrder, showOnHomepage` (keep it minimal — no speculative fields)
 - Seed from current 8 constants; migrate `Driver.city` values to FK (data is clean: only ~4 drivers)
-- Admin `/admin/cities`: add / activate / deactivate / reorder
+- Admin `/admin/cities`: add / activate / deactivate / reorder / **toggle homepage visibility**
 - Replace free-text city inputs with a select (driver profile form + directory filter); homepage pills read from DB
-- *Why:* you asked for city administration; it also fixes data quality (free-text city breaks filtering) and enables city landing pages (H2).
+- **Homepage city display management:** admin controls which cities appear in the "Service Areas" section via `showOnHomepage` flag. Default: auto-show cities with 3+ active drivers (admin can override). During early stage with few drivers, admin manually curates which cities to highlight.
+- *Why:* you asked for city administration; it also fixes data quality (free-text city breaks filtering) and enables city landing pages (H2). Homepage visibility control is essential pre-launch so the homepage doesn't show empty cities.
 
-#### B2 — Structured driver attributes — ~2.5 days
+#### B2 — Structured driver attributes — ~3.5 days
 Directly from the original vision's "Búsqueda de Guante Blanco" (§9), kept MVP-lean:
 - **Vehicle:** `vehicleMake`, `vehicleModel`, `vehicleYear`, `vehicleColor`, `passengerCapacity` (replaces reliance on free-text `vehicleType`; keep `vehicleType` as category: Sedan / SUV-Minivan / Van / Luxury)
+  - **Vehicle selects (not free text):** make → model → year as cascading searchable selects from a `VehicleMake`/`VehicleModel` catalog. Reduces user errors. "Other" fallback with free text for unusual vehicles. Seed with common US makes/models.
 - **Amenities** (multi-select checkboxes): A/C, Wi-Fi, phone charger, child seat, pet-friendly, wheelchair accessible, large trunk, non-smoker, night service, airport specialist, long-distance/interstate
 - **Payment methods** (multi-select): cash, card, Zelle, CashApp, Venmo, Apple/Google Pay
 - **Operating hours:** simple text field per original vision ("Mon–Fri, 6 AM–8 PM") — not a structured scheduler
-- Amenity + payment options defined as a DB-backed `ProfileAttribute` catalog manageable from admin (original vision: "Gestor de Categorías: añadir un nuevo filtro sin tocar el código")
+- **Service area city select (searchable):** replace comma-separated `serviceAreaText` with a structured `ServiceArea` relation (driverId, cityId). Searchable multi-select showing:
+  1. Cities from the same state as the driver's home city first
+  2. Then nearby/recommended cities in the same state
+  3. Then the rest of the state's cities
+  - Driver can select multiple cities (chips/tags UI). Admin can also edit service areas.
+  - Keep `serviceAreaText` as fallback during migration; eventually deprecate.
+- Amenity + payment options defined as a DB-backed `ProfileAttribute` catalog **manageable from admin** (`/admin/attributes` with tab switcher for amenities vs payment methods): create/edit/deactivate/reorder, icon picker from lucide set. Changes reflect immediately in driver profile forms and directory filters.
 - Update: profile form (grouped sections), completeness scoring, admin detail view
-- *Why:* this is the substance of search filters, profile redesign, and SEO specificity. Free-text can't power any of it.
+- *Why:* this is the substance of search filters, profile redesign, and SEO specificity. Free-text can't power any of it. Selects reduce user errors — a core goal. Admin-managed catalogs mean no code changes needed to add new amenities or payment methods.
 
 #### B3 — Vehicle photo gallery — ~2 days
 - `DriverPhoto` model: `id, driverId, url, sortOrder, createdAt`
@@ -163,7 +171,7 @@ Directly from the original vision's "Búsqueda de Guante Blanco" (§9), kept MVP
 - Gallery viewer on public profile (lightbox, swipe on mobile)
 - *Why:* the #1 visual gap. "Galería de Vehículo" was a free-tier feature in the original vision and the profile audit marks it as the biggest missing trust element.
 
-**Fase B total: ~6 days**
+**Fase B total: ~7.5 days**
 
 ---
 
@@ -261,17 +269,19 @@ New structure (mobile-first):
 
 **Purpose:** run the whole business from the panel, never from Prisma Studio.
 
-#### G1 — Admin operational tooling — ~2 days
+#### G1 — Admin operational tooling — ~3 days
 - **Enable the disabled search** (name/email/phone/city) in `/admin/drivers`
 - Pagination in admin tables; bulk status actions; CSV export of drivers/leads/inquiries
 - User management view (drivers + customers): reset-password trigger, deactivate account
+- **Admin driver profile editing:** admin can edit ALL driver profile fields (name, phone, WhatsApp, city, vehicle info, bio, amenities, payment methods, service areas, etc.) from `/admin/drivers/[id]`. Admin can upload/replace/delete driver profile images and gallery photos. All changes use the same validation schemas as the driver-facing profile form.
+- **Admin link to main site:** "View site" link in admin sidebar (opens in new tab), "View public profile" link on admin driver detail page, "View directory" link in admin sidebar. Currently no way to navigate from admin to the public site.
 
 #### G2 — Admin analytics dashboard — ~2 days
 - Platform metrics: drivers by status/city, signups over time, views + leads over time (7/30/90d), top drivers, review/report volumes, waitlist count
 - Simple charts (recharts or CSS bars — no heavy BI); reuse PostHog for deep dives
 - *Why:* "que sea fácil para mí administrarlo" — this is the daily-operations cockpit. Also feeds the weekly driver stats emails later (original vision: "Envío de estadísticas semanales").
 
-**Fase G total: ~4 days**
+**Fase G total: ~5 days**
 
 ---
 
@@ -370,13 +380,13 @@ New structure (mobile-first):
 | Fase | Theme | Effort | Cumulative |
 |---|---|---|---|
 | A | Close operational MVP | ~2d | 2d |
-| B | Structured data foundation | ~6d | 8d |
-| C | Search & directory | ~4.5d | 12.5d |
-| D | Profile redesign | ~3d | 15.5d |
-| E | Reviews & reports | ~6d | 21.5d |
-| F | Customer accounts & favorites | ~3d | 24.5d |
-| G | Full admin | ~4d | 28.5d |
-| H | SEO & LAUNCH 🚀 | ~4d | 32.5d |
+| B | Structured data foundation | ~7.5d | 9.5d |
+| C | Search & directory | ~4.5d | 14d |
+| D | Profile redesign | ~3d | 17d |
+| E | Reviews & reports | ~6d | 23d |
+| F | Customer accounts & favorites | ~3d | 26d |
+| G | Full admin | ~5d | 31d |
+| H | SEO & LAUNCH 🚀 | ~4d | 35d |
 | I | Monetization (post-launch) | ~6.5d | 39d |
 | J | Performance & UX polish (interleaved) | ~4.5d | as-needed |
 
