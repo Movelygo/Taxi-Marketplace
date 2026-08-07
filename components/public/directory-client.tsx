@@ -1,10 +1,11 @@
 'use client'
 
-import { useState, useEffect, useRef, useCallback } from 'react'
+import { useState, useEffect, useRef, useCallback, useMemo } from 'react'
 import { DirectoryFilters, type FilterState } from './directory-filters'
 import { DriverCard } from './driver-card'
 import { DriverGridSkeleton } from './driver-card-skeleton'
 import { Pagination } from './pagination'
+import { GeolocationBanner } from './geolocation-banner'
 import type { DriverSearchResult, DriverSearchResultItem } from '@/modules/drivers/types/search'
 import type { City, ProfileAttribute } from '@prisma/client'
 import Link from 'next/link'
@@ -69,6 +70,7 @@ export function DirectoryClient({
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [showMobileFilters, setShowMobileFilters] = useState(false)
+  const [detectedLocation, setDetectedLocation] = useState<{ city: string; state: string } | null>(null)
 
   // Ref to track the latest fetch request and cancel stale ones
   const fetchIdRef = useRef(0)
@@ -76,6 +78,28 @@ export function DirectoryClient({
   const isInitialRenderRef = useRef(true)
 
   const totalPages = Math.ceil(total / pageSize)
+
+  // Split drivers into "near you" and "more drivers" based on detected location
+  const { nearbyDrivers, otherDrivers } = useMemo(() => {
+    if (!detectedLocation) {
+      return { nearbyDrivers: [], otherDrivers: drivers }
+    }
+    const detectedCityLower = detectedLocation.city.toLowerCase()
+    const nearby: DriverSearchResultItem[] = []
+    const other: DriverSearchResultItem[] = []
+    for (const driver of drivers) {
+      const servesDetectedCity =
+        driver.cityRel?.name?.toLowerCase() === detectedCityLower ||
+        driver.city?.toLowerCase() === detectedCityLower ||
+        driver.serviceAreas?.some(sa => sa.city.name.toLowerCase() === detectedCityLower)
+      if (servesDetectedCity) {
+        nearby.push(driver)
+      } else {
+        other.push(driver)
+      }
+    }
+    return { nearbyDrivers: nearby, otherDrivers: other }
+  }, [drivers, detectedLocation])
 
   // Single fetch function — called on filter/page change
   const fetchDrivers = useCallback(
@@ -175,6 +199,11 @@ export function DirectoryClient({
     (filters.availabilityStatus ? 1 : 0)
 
   return (
+    <div>
+      <GeolocationBanner
+        onLocationDetected={(loc) => setDetectedLocation({ city: loc.city, state: loc.state })}
+        onDismiss={() => setDetectedLocation(null)}
+      />
     <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8">
       {/* Mobile filter toggle + sort */}
       <div className="flex items-center justify-between mb-6 lg:hidden">
@@ -299,30 +328,84 @@ export function DirectoryClient({
             </div>
           ) : (
             <>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {drivers.map((driver) => (
-                  <DriverCard key={driver.id} driver={driver} />
-                ))}
-
-                {/* Join card */}
-                <article className="bg-white border-2 border-dashed border-gray-300 rounded-2xl p-6 flex flex-col items-center justify-center text-center min-h-[300px] hover:border-[#0B1F3D] hover:bg-gray-50 transition-all">
-                  <div className="w-12 h-12 rounded-lg bg-[#0B1F3D]/5 flex items-center justify-center mb-4">
-                    <svg className="w-6 h-6 text-[#0B1F3D]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-                    </svg>
+              {/* Two-section layout when location detected */}
+              {detectedLocation && nearbyDrivers.length > 0 ? (
+                <>
+                  {/* Near you section */}
+                  <div className="mb-8">
+                    <h2 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
+                      <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                      </svg>
+                      Drivers near {detectedLocation.city}
+                    </h2>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                      {nearbyDrivers.map((driver) => (
+                        <DriverCard key={driver.id} driver={driver} />
+                      ))}
+                    </div>
                   </div>
-                  <h3 className="text-base font-bold text-gray-900 mb-2">Are you a driver?</h3>
-                  <p className="text-sm text-gray-600 mb-5 max-w-[220px]">
-                    List your service for free and connect with customers in your area.
-                  </p>
-                  <Link
-                    href="/register"
-                    className="inline-flex items-center justify-center px-5 py-2.5 bg-[#0B1F3D] text-white rounded-lg text-sm font-semibold hover:bg-[#001F3F] transition-colors"
-                  >
-                    Create Profile
-                  </Link>
-                </article>
-              </div>
+
+                  {/* More drivers section */}
+                  {otherDrivers.length > 0 && (
+                    <div>
+                      <h2 className="text-lg font-bold text-gray-500 mb-4">More drivers</h2>
+                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        {otherDrivers.map((driver) => (
+                          <DriverCard key={driver.id} driver={driver} />
+                        ))}
+
+                        {/* Join card */}
+                        <article className="bg-white border-2 border-dashed border-gray-300 rounded-2xl p-6 flex flex-col items-center justify-center text-center min-h-[300px] hover:border-[#0B1F3D] hover:bg-gray-50 transition-all">
+                          <div className="w-12 h-12 rounded-lg bg-[#0B1F3D]/5 flex items-center justify-center mb-4">
+                            <svg className="w-6 h-6 text-[#0B1F3D]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                            </svg>
+                          </div>
+                          <h3 className="text-base font-bold text-gray-900 mb-2">Are you a driver?</h3>
+                          <p className="text-sm text-gray-600 mb-5 max-w-[220px]">
+                            List your service for free and connect with customers in your area.
+                          </p>
+                          <Link
+                            href="/register"
+                            className="inline-flex items-center justify-center px-5 py-2.5 bg-[#0B1F3D] text-white rounded-lg text-sm font-semibold hover:bg-[#001F3F] transition-colors"
+                          >
+                            Create Profile
+                          </Link>
+                        </article>
+                      </div>
+                    </div>
+                  )}
+                </>
+              ) : (
+                <>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {drivers.map((driver) => (
+                      <DriverCard key={driver.id} driver={driver} />
+                    ))}
+
+                    {/* Join card */}
+                    <article className="bg-white border-2 border-dashed border-gray-300 rounded-2xl p-6 flex flex-col items-center justify-center text-center min-h-[300px] hover:border-[#0B1F3D] hover:bg-gray-50 transition-all">
+                      <div className="w-12 h-12 rounded-lg bg-[#0B1F3D]/5 flex items-center justify-center mb-4">
+                        <svg className="w-6 h-6 text-[#0B1F3D]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                        </svg>
+                      </div>
+                      <h3 className="text-base font-bold text-gray-900 mb-2">Are you a driver?</h3>
+                      <p className="text-sm text-gray-600 mb-5 max-w-[220px]">
+                        List your service for free and connect with customers in your area.
+                      </p>
+                      <Link
+                        href="/register"
+                        className="inline-flex items-center justify-center px-5 py-2.5 bg-[#0B1F3D] text-white rounded-lg text-sm font-semibold hover:bg-[#001F3F] transition-colors"
+                      >
+                        Create Profile
+                      </Link>
+                    </article>
+                  </div>
+                </>
+              )}
 
               {/* Pagination */}
               <Pagination
@@ -376,6 +459,7 @@ export function DirectoryClient({
           </div>
         </div>
       )}
+    </div>
     </div>
   )
 }

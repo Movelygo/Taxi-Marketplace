@@ -39,11 +39,11 @@ export function buildDriverSearchWhere(params: DriverSearchParams): Prisma.Drive
   // Vehicle type filter
   if (params.vehicleType) where.vehicleType = { equals: params.vehicleType, mode: 'insensitive' }
 
-  // Amenities — array overlap (driver has at least one of the selected)
-  if (params.amenities?.length) where.amenities = { hasSome: params.amenities }
+  // Amenities — driver must have ALL selected amenities (AND logic)
+  if (params.amenities?.length) where.amenities = { hasEvery: params.amenities }
 
-  // Payment methods — array overlap
-  if (params.paymentMethods?.length) where.paymentMethods = { hasSome: params.paymentMethods }
+  // Payment methods — driver must accept ALL selected methods (AND logic)
+  if (params.paymentMethods?.length) where.paymentMethods = { hasEvery: params.paymentMethods }
 
   // Minimum passenger capacity
   if (params.minCapacity !== undefined) where.passengerCapacity = { gte: params.minCapacity }
@@ -299,6 +299,9 @@ export class DriverRepository {
         isFeatured: true,
         bio: true,
         cityRel: { select: { name: true, state: true } },
+        serviceAreas: {
+          select: { city: { select: { name: true } } },
+        },
         photos: {
           select: { url: true, sortOrder: true },
           orderBy: { sortOrder: 'asc' },

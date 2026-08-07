@@ -42,7 +42,8 @@ import {
   ArrowLeft,
   Flag,
   X,
-  Check
+  Check,
+  RefreshCw
 } from 'lucide-react'
 
 export const AMENITY_ICONS: Record<string, any> = {
@@ -98,5 +99,6 @@ export {
   ArrowLeft,
   Flag,
   X,
-  Check
+  Check,
+  RefreshCw
 }

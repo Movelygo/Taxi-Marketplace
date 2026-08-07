@@ -34,6 +34,7 @@ export interface DriverSearchResultItem {
   isFeatured: boolean
   bio: string | null
   cityRel: { name: string; state: string } | null
+  serviceAreas: { city: { name: string } }[]
   photos: { url: string; sortOrder: number }[]
   rating: number | null
   reviewCount: number

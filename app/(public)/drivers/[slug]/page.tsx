@@ -91,7 +91,7 @@ export default async function DriverProfilePage({ params }: DriverProfilePagePro
   const reviews = await ReviewService.getApprovedForDriver(driver.id)
   const ratingSummary = await ReviewService.getRatingSummary(driver.id)
 
-  const whatsappLink = getWhatsAppLink(driver.whatsappNumber, `Hi ${driver.displayName}, I found you on Movely and would like to book a ride.`)
+  const whatsappLink = getWhatsAppLink(driver.whatsappNumber, `Hi ${driver.displayName}, I found you on Movely and would like to discuss a trip.`)
   const phoneLink = getPhoneCallLink(driver.phone)
 
   // Mapping for display labels
@@ -268,9 +268,9 @@ export default async function DriverProfilePage({ params }: DriverProfilePagePro
               <div className="hidden lg:block bg-[#0B1F3D] rounded-3xl p-8 text-white shadow-2xl relative overflow-hidden group">
                 <div className="absolute top-0 right-0 -mt-4 -mr-4 w-24 h-24 bg-white/5 rounded-full blur-2xl group-hover:bg-white/10 transition-colors" />
                 
-                <h3 className="text-2xl font-bold mb-2">Book this ride</h3>
+                <h3 className="text-2xl font-bold mb-2 text-white">Contact this driver</h3>
                 <p className="text-white/60 text-sm mb-8 leading-relaxed">
-                  Contact {driver.displayName.split(' ')[0]} directly to discuss your trip and get a quote.
+                  Get in touch with {driver.displayName.split(' ')[0]} directly to discuss your trip and get a quote.
                 </p>
                 
                 <div className="space-y-3">
